@@ -8,6 +8,6 @@ void main() {
       const ProviderScope(child: RhythmApp()),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
   });
 }
