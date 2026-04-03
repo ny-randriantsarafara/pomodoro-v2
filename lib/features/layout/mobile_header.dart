@@ -12,6 +12,8 @@ class MobileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topInset = MediaQuery.of(context).padding.top;
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.background.withValues(alpha: 0.9),
@@ -26,9 +28,11 @@ class MobileHeader extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xl,
-              vertical: AppSpacing.lg,
+            padding: EdgeInsets.only(
+              left: AppSpacing.xl,
+              right: AppSpacing.xl,
+              top: topInset + AppSpacing.lg,
+              bottom: AppSpacing.lg,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -28,13 +28,17 @@ class AppRouter {
               child: HistoryPage(),
             ),
           ),
-          GoRoute(
-            path: '/auth',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: AuthPage(),
-            ),
-          ),
         ],
+      ),
+      GoRoute(
+        path: '/auth',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const AuthPage(),
+          transitionsBuilder: (context, animation, _, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
       ),
       GoRoute(
         path: '/focus/:taskId',

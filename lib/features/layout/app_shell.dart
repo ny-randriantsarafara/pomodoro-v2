@@ -31,7 +31,7 @@ class AppShell extends StatelessWidget {
                     left: isDesktop ? AppSpacing.xxxl : AppSpacing.xl,
                     right: isDesktop ? AppSpacing.xxxl : AppSpacing.xl,
                     top: isDesktop ? AppSpacing.xxxl : AppSpacing.xl,
-                    bottom: isDesktop ? AppSpacing.xxxl : 96,
+                    bottom: isDesktop ? AppSpacing.xxxl : AppSpacing.lg,
                   ),
                   child: child,
                 ),

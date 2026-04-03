@@ -46,13 +46,18 @@ class HistoryPage extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xl),
             LayoutBuilder(
               builder: (context, constraints) {
-                final cardWidth = (constraints.maxWidth - AppSpacing.lg * 2) / 3;
+                final isMobileGrid = constraints.maxWidth < 500;
+                final columns = isMobileGrid ? 2 : 3;
+                const gap = AppSpacing.lg;
+                final cardWidth =
+                    (constraints.maxWidth - gap * (columns - 1)) / columns;
+
                 return Wrap(
-                  spacing: AppSpacing.lg,
-                  runSpacing: AppSpacing.lg,
+                  spacing: gap,
+                  runSpacing: gap,
                   children: [
                     SizedBox(
-                      width: cardWidth.clamp(120, 300),
+                      width: cardWidth,
                       child: StatCard(
                         icon: LucideIcons.timer,
                         label: 'Total Focus',
@@ -60,7 +65,7 @@ class HistoryPage extends ConsumerWidget {
                       ),
                     ),
                     SizedBox(
-                      width: cardWidth.clamp(120, 300),
+                      width: cardWidth,
                       child: StatCard(
                         icon: LucideIcons.trophy,
                         label: 'Sessions',
@@ -68,7 +73,7 @@ class HistoryPage extends ConsumerWidget {
                       ),
                     ),
                     SizedBox(
-                      width: cardWidth.clamp(120, 300),
+                      width: cardWidth,
                       child: StatCard(
                         icon: LucideIcons.layers,
                         label: 'Active Projects',
