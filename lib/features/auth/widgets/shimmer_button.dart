@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_shadows.dart';
+import '../../../theme/app_spacing.dart';
 import '../../../theme/app_typography.dart';
 
 class ShimmerButton extends StatefulWidget {
@@ -65,6 +66,7 @@ class _ShimmerButtonState extends State<ShimmerButton>
             boxShadow: _hovered ? AppShadows.lg : AppShadows.md,
           ),
           alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: widget.isLoading
@@ -80,6 +82,9 @@ class _ShimmerButtonState extends State<ShimmerButton>
                 : Text(
                     widget.label,
                     key: ValueKey(widget.label),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: AppTypography.bodyBase.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.white,
