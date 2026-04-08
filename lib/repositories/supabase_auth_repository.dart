@@ -68,6 +68,20 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> deleteAccount() async {
+    final response = await _client.functions.invoke(
+      'delete-user',
+      method: HttpMethod.post,
+    );
+    if (response.status != 200) {
+      throw AuthException(
+        'Failed to delete account (status ${response.status})',
+      );
+    }
+    await _client.auth.signOut();
+  }
+
+  @override
   Stream<AuthState> get onAuthStateChange => _client.auth.onAuthStateChange;
 
   @override

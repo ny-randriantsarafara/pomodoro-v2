@@ -30,7 +30,7 @@ void main() {
 
     expect(find.text('Rhythm'), findsWidgets);
     expect(find.text('Focus'), findsOneWidget);
-    expect(find.text('Sign Out'), findsOneWidget);
+    expect(find.text('Account'), findsOneWidget);
   });
 
   testWidgets('mobile shell renders header and bottom nav', (tester) async {
@@ -48,7 +48,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Rhythm'), findsWidgets);
-    expect(find.text('Sign Out'), findsOneWidget);
+    expect(find.text('Account'), findsOneWidget);
     expect(find.text('Focus'), findsOneWidget);
   });
 

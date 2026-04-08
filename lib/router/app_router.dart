@@ -17,7 +17,6 @@ GoRouter createRouter(Ref ref) {
       final isAuthenticated = authRepo.currentUser != null;
       final isOnAuth = state.matchedLocation == '/auth';
 
-      if (!isAuthenticated && !isOnAuth) return '/auth';
       if (isAuthenticated && isOnAuth) return '/';
       return null;
     },

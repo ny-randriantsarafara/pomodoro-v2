@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import 'package:go_router/go_router.dart';
 import '../../shared/widgets/app_icon.dart';
+import '../../repositories/auth_repository.dart';
 import '../../store/providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
@@ -20,7 +21,7 @@ class DesktopHeader extends ConsumerWidget {
     final isFocus = location == '/';
     final isRhythm = location == '/history';
     final authRepo = ref.watch(authRepositoryProvider);
-    final isAuthenticated = authRepo.currentUser != null;
+    final isAuthenticated = ref.watch(isAuthenticatedProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -85,16 +86,28 @@ class DesktopHeader extends ConsumerWidget {
                       ),
                     ),
                     const Spacer(),
-                    MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        onTap: () {
-                          if (isAuthenticated) {
+                    if (isAuthenticated)
+                      PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == 'sign_out') {
                             authRepo.signOut();
-                          } else {
-                            context.go('/auth');
+                          } else if (value == 'delete') {
+                            _showDeleteConfirmation(context, authRepo);
                           }
                         },
+                        itemBuilder: (_) => [
+                          const PopupMenuItem(
+                            value: 'sign_out',
+                            child: Text('Sign Out'),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(
+                              'Delete Account',
+                              style: TextStyle(color: const Color(0xFFDC2626)),
+                            ),
+                          ),
+                        ],
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
@@ -105,15 +118,38 @@ class DesktopHeader extends ConsumerWidget {
                             borderRadius: AppRadii.borderLg,
                           ),
                           child: Text(
-                            isAuthenticated ? 'Sign Out' : 'Sign In',
+                            'Account',
                             style: AppTypography.bodySm.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.neutral600,
                             ),
                           ),
                         ),
+                      )
+                    else
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () => context.go('/auth'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.lg,
+                              vertical: AppSpacing.sm,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.neutral100,
+                              borderRadius: AppRadii.borderLg,
+                            ),
+                            child: Text(
+                              'Sign In',
+                              style: AppTypography.bodySm.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.neutral600,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -123,6 +159,33 @@ class DesktopHeader extends ConsumerWidget {
       ),
     );
   }
+}
+
+void _showDeleteConfirmation(BuildContext context, AuthRepository authRepo) {
+  showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Delete Account'),
+      content: const Text(
+        'This will permanently delete your account and all data. '
+        'This cannot be undone.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(ctx).pop();
+            authRepo.deleteAccount();
+          },
+          style: TextButton.styleFrom(foregroundColor: const Color(0xFFDC2626)),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
 }
 
 class _NavTab extends StatelessWidget {

@@ -6,3 +6,6 @@ export 'supabase_auth_repository.dart';
 export 'supabase_task_repository.dart';
 export 'supabase_project_repository.dart';
 export 'supabase_session_repository.dart';
+export 'local_task_repository.dart';
+export 'local_project_repository.dart';
+export 'local_session_repository.dart';

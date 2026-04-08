@@ -127,6 +127,9 @@ class TestAuthRepository implements AuthRepository {
   Future<void> signOut() async {}
 
   @override
+  Future<void> deleteAccount() async {}
+
+  @override
   Stream<AuthState> get onAuthStateChange => const Stream.empty();
 
   @override
