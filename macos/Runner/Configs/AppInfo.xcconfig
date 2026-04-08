@@ -8,7 +8,7 @@
 PRODUCT_NAME = pomodoro
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.nyhasinavalona.pomodoro
+PRODUCT_BUNDLE_IDENTIFIER = com.nyhasinavalona.rhythm
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
