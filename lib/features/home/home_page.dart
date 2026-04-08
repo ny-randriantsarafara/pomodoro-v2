@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/models.dart';
+import '../../shared/logging/app_logger.dart';
 import '../../shared/widgets/anchored_overlay.dart';
 import '../../shared/widgets/page_entry_animation.dart';
 import '../../shared/widgets/preset_picker.dart';
@@ -19,6 +20,7 @@ import 'widgets/post_create_affordance.dart';
 import 'widgets/project_dropdown.dart';
 import 'widgets/task_row.dart';
 import 'widgets/task_overflow_menu.dart';
+import 'widgets/task_editor.dart';
 import 'widgets/search_filter_bar.dart';
 import 'widgets/empty_task_state.dart';
 
@@ -33,10 +35,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   final _newTaskController = TextEditingController();
   final _composerFocusNode = FocusNode();
   String? _selectedProjectId;
-  // ignore: unused_field
-  bool _isProjectDropdownOpen = false;
-  bool _isAddingProject = false;
-  String _newProjectName = '';
   // ignore: unused_field
   String? _activePresetTaskId;
   // ignore: unused_field
@@ -55,21 +53,23 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     super.initState();
     _newTaskController.addListener(() => setState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(appStoreProvider).loadData();
+    });
   }
 
   @override
   void dispose() {
-    _newTaskController.dispose();
-    _composerFocusNode.dispose();
     _postCreateTimer?.cancel();
     _closeAllOverlays();
+    _newTaskController.dispose();
+    _composerFocusNode.dispose();
     super.dispose();
   }
 
   void _closeAllOverlays() {
     _currentOverlay?.remove();
     _currentOverlay = null;
-    _isProjectDropdownOpen = false;
     _activePresetTaskId = null;
     _activeMenuTaskId = null;
   }
@@ -80,11 +80,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     Overlay.of(context).insert(entry);
   }
 
-  void _addTask() {
+  Future<void> _addTask() async {
     final title = _newTaskController.text.trim();
     if (title.isEmpty) return;
     final store = ref.read(appStoreProvider);
-    store.addTask(title, projectId: _selectedProjectId);
+    await store.addTask(title, projectId: _selectedProjectId);
     final newTask = store.tasks.first;
     _newTaskController.clear();
     _selectedProjectId = null;
@@ -98,53 +98,100 @@ class _HomePageState extends ConsumerState<HomePage> {
     });
   }
 
-  void _openProjectDropdown() {
-    setState(() => _isProjectDropdownOpen = true);
-    final entry = buildAnchoredOverlay(
-      context: context,
-      link: _composerProjectLink,
-      onDismiss: () {
-        setState(() => _isProjectDropdownOpen = false);
-        _closeAllOverlays();
-      },
-      child: _buildProjectDropdown(),
-    );
-    _showOverlay(entry);
-  }
-
-  Widget _buildProjectDropdown() {
+  Future<void> _openProjectDropdown() async {
     final store = ref.read(appStoreProvider);
-    return ProjectDropdown(
-      projects: store.projects,
-      isAddingProject: _isAddingProject,
-      newProjectName: _newProjectName,
-      onNameChanged: (v) => setState(() => _newProjectName = v),
-      onStartCreate: () => setState(() => _isAddingProject = true),
-      onCancelCreate: () => setState(() {
-        _isAddingProject = false;
-        _newProjectName = '';
-      }),
-      onSelectProject: (id) {
-        setState(() {
-          _selectedProjectId = id;
-          _isProjectDropdownOpen = false;
-        });
-        _closeAllOverlays();
-      },
-      onCommitCreate: () {
-        final store = ref.read(appStoreProvider);
-        final style = ProjectStyles.all[Random().nextInt(ProjectStyles.all.length)];
-        store.addProject(_newProjectName.trim(), style);
-        final newProject = store.projects.last;
-        setState(() {
-          _selectedProjectId = newProject.id;
-          _isAddingProject = false;
-          _newProjectName = '';
-          _isProjectDropdownOpen = false;
-        });
-        _closeAllOverlays();
-      },
-    );
+    final width = MediaQuery.sizeOf(context).width;
+    final wide = width >= 600;
+    final newProjectNameController = TextEditingController();
+    var isAddingProject = false;
+
+    Widget buildPicker(BuildContext modalContext, void Function(void Function()) setModalState) {
+      return ProjectDropdown(
+        projects: ref.read(appStoreProvider).projects,
+        isAddingProject: isAddingProject,
+        newProjectNameController: newProjectNameController,
+        onNameChanged: (_) => setModalState(() {}),
+        onStartCreate: () {
+          newProjectNameController.clear();
+          setModalState(() => isAddingProject = true);
+        },
+        onCancelCreate: () {
+          newProjectNameController.clear();
+          setModalState(() => isAddingProject = false);
+        },
+        onSelectProject: (id) {
+          if (!mounted) return;
+          setState(() => _selectedProjectId = id);
+          Navigator.of(modalContext).pop();
+        },
+        onCommitCreate: () async {
+          final style =
+              ProjectStyles.all[Random().nextInt(ProjectStyles.all.length)];
+          try {
+            await store.addProject(newProjectNameController.text.trim(), style);
+          } catch (e, stackTrace) {
+            AppLogger.error(
+              domain: 'composer_project_picker',
+              event: 'project_create_failed',
+              error: e,
+              stackTrace: stackTrace,
+            );
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Could not create project.')),
+              );
+            }
+            return;
+          }
+          final newProject = store.projects.last;
+          if (!mounted || !modalContext.mounted) return;
+          setState(() => _selectedProjectId = newProject.id);
+          Navigator.of(modalContext).pop();
+        },
+      );
+    }
+
+    try {
+      if (wide) {
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) {
+            return StatefulBuilder(
+              builder: (context, setModalState) {
+                return AlertDialog(
+                  contentPadding: EdgeInsets.zero,
+                  content: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    child: buildPicker(dialogContext, setModalState),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      } else {
+        await showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          builder: (sheetContext) {
+            return SafeArea(
+              child: StatefulBuilder(
+                builder: (context, setModalState) {
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+                    ),
+                    child: buildPicker(sheetContext, setModalState),
+                  );
+                },
+              ),
+            );
+          },
+        );
+      }
+    } finally {
+      newProjectNameController.dispose();
+    }
   }
 
   void _openPresetPicker(String taskId, LayerLink link) {
@@ -172,6 +219,129 @@ class _HomePageState extends ConsumerState<HomePage> {
     _showOverlay(entry);
   }
 
+  Future<void> _openTaskEditor(Task task) async {
+    AppLogger.info(
+      domain: 'task_editor',
+      event: 'opened',
+      context: {'task_id': task.id},
+    );
+    final width = MediaQuery.sizeOf(context).width;
+    final wide = width >= 600;
+
+    Future<String> createProject(String name) async {
+      final store = ref.read(appStoreProvider);
+      final style =
+          ProjectStyles.all[Random().nextInt(ProjectStyles.all.length)];
+      try {
+        await store.addProject(name, style);
+      } on Object catch (error, stackTrace) {
+        AppLogger.error(
+          domain: 'task_editor',
+          event: 'inline_project_create_failed',
+          context: {'task_id': task.id},
+          error: error,
+          stackTrace: stackTrace,
+        );
+        rethrow;
+      }
+      AppLogger.info(
+        domain: 'task_editor',
+        event: 'inline_project_created',
+        context: {'task_id': task.id},
+      );
+      return store.projects.last.id;
+    }
+
+    Future<void> persistEdit(
+      String title,
+      String? projectId,
+      void Function() close,
+    ) async {
+      final store = ref.read(appStoreProvider);
+      final clearProject = task.projectId != null && projectId == null;
+      try {
+        await store.updateTask(
+          id: task.id,
+          title: title,
+          projectId: clearProject ? null : projectId,
+          clearProjectId: clearProject,
+        );
+        AppLogger.info(
+          domain: 'task_editor',
+          event: 'task_update_succeeded',
+          context: {'task_id': task.id},
+        );
+        if (!mounted) return;
+        close();
+      } on Object catch (error, stackTrace) {
+        AppLogger.error(
+          domain: 'task_editor',
+          event: 'task_update_failed',
+          context: {'task_id': task.id},
+          error: error,
+          stackTrace: stackTrace,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not save task.')),
+          );
+        }
+      }
+    }
+
+    if (!mounted) return;
+
+    if (wide) {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            contentPadding: EdgeInsets.zero,
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: TaskEditor(
+                initialTitle: task.title,
+                initialProjectId: task.projectId,
+                projects: ref.read(appStoreProvider).projects,
+                onCancel: () => Navigator.of(dialogContext).pop(),
+                onSave: (title, projectId) => persistEdit(
+                  title,
+                  projectId,
+                  () => Navigator.of(dialogContext).pop(),
+                ),
+                onCreateProject: createProject,
+              ),
+            ),
+          );
+        },
+      );
+      return;
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final inset = MediaQuery.viewInsetsOf(sheetContext).bottom;
+        return Padding(
+          padding: EdgeInsets.only(bottom: inset),
+          child: TaskEditor(
+            initialTitle: task.title,
+            initialProjectId: task.projectId,
+            projects: ref.read(appStoreProvider).projects,
+            onCancel: () => Navigator.of(sheetContext).pop(),
+            onSave: (title, projectId) => persistEdit(
+              title,
+              projectId,
+              () => Navigator.of(sheetContext).pop(),
+            ),
+            onCreateProject: createProject,
+          ),
+        );
+      },
+    );
+  }
+
   void _openOverflowMenu(String taskId, LayerLink link) {
     setState(() => _activeMenuTaskId = taskId);
     final entry = buildAnchoredOverlay(
@@ -184,8 +354,15 @@ class _HomePageState extends ConsumerState<HomePage> {
       targetAnchor: Alignment.bottomRight,
       followerAnchor: Alignment.topRight,
       child: TaskOverflowMenu(
-        onDelete: () {
-          ref.read(appStoreProvider).deleteTask(taskId);
+        onEdit: () {
+          final task = ref.read(appStoreProvider).findTask(taskId);
+          if (task == null) return;
+          _closeAllOverlays();
+          setState(() => _activeMenuTaskId = null);
+          _openTaskEditor(task);
+        },
+        onDelete: () async {
+          await ref.read(appStoreProvider).deleteTask(taskId);
           _closeAllOverlays();
           setState(() => _activeMenuTaskId = null);
         },
@@ -254,7 +431,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 controller: _newTaskController,
                 focusNode: _composerFocusNode,
                 onSubmit: _addTask,
-                onProjectTap: _openProjectDropdown,
+                onProjectTap: () {
+                  _openProjectDropdown();
+                },
                 selectedProjectName: selectedProject?.name,
                 selectedProjectStyle: selectedProject?.style,
                 showProjectRow: isComposing && _postCreate == null,
@@ -291,10 +470,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       final completed = tasks.where((t) => t.completed).toList();
                       for (final t in completed) {
-                        ref.read(appStoreProvider).deleteTask(t.id);
+                        await ref.read(appStoreProvider).deleteTask(t.id);
                       }
                     },
                     child: Text('Clear completed', style: AppTypography.bodySm.copyWith(color: AppColors.textTertiary)),
@@ -318,7 +497,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         task: task,
                         project: project,
                         lastUsedPreset: lastUsedPreset,
-                        onToggle: () => store.toggleTask(task.id),
+                        onToggle: () async => await store.toggleTask(task.id),
                         onStart: () => context.go('/focus/${task.id}?preset=$lastUsedPreset'),
                         onPresetTap: () => _openPresetPicker(task.id, presetLink),
                         onMenuTap: () => _openOverflowMenu(task.id, menuLink),

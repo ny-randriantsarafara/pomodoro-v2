@@ -9,8 +9,8 @@ import '../../../theme/app_typography.dart';
 class ProjectDropdown extends StatelessWidget {
   final List<Project> projects;
   final bool isAddingProject;
-  final String newProjectName;
-  final ValueChanged<String> onNameChanged;
+  final TextEditingController newProjectNameController;
+  final ValueChanged<String>? onNameChanged;
   final VoidCallback onStartCreate;
   final VoidCallback onCancelCreate;
   final void Function(String? projectId) onSelectProject;
@@ -20,8 +20,8 @@ class ProjectDropdown extends StatelessWidget {
     super.key,
     required this.projects,
     required this.isAddingProject,
-    required this.newProjectName,
-    required this.onNameChanged,
+    required this.newProjectNameController,
+    this.onNameChanged,
     required this.onStartCreate,
     required this.onCancelCreate,
     required this.onSelectProject,
@@ -52,8 +52,9 @@ class ProjectDropdown extends StatelessWidget {
               child: Column(
                 children: [
                   TextField(
-                    autofocus: true,
+                    controller: newProjectNameController,
                     onChanged: onNameChanged,
+                    autofocus: true,
                     style: AppTypography.bodySm.copyWith(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Project name...',
@@ -72,11 +73,18 @@ class ProjectDropdown extends StatelessWidget {
                       ),
                       const Spacer(),
                       GestureDetector(
-                        onTap: newProjectName.trim().isNotEmpty ? onCommitCreate : null,
-                        child: Text('Add Project', style: AppTypography.bodySm.copyWith(
-                          color: newProjectName.trim().isNotEmpty ? AppColors.neutral900 : AppColors.textMuted,
-                          fontWeight: FontWeight.w600,
-                        )),
+                        onTap: newProjectNameController.text.trim().isNotEmpty
+                            ? onCommitCreate
+                            : null,
+                        child: Text(
+                          'Add Project',
+                          style: AppTypography.bodySm.copyWith(
+                            color: newProjectNameController.text.trim().isNotEmpty
+                                ? AppColors.neutral900
+                                : AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),

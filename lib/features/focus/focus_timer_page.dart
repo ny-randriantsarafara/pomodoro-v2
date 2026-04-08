@@ -97,7 +97,7 @@ class _FocusTimerPageState extends ConsumerState<FocusTimerPage>
     });
   }
 
-  void _handleComplete() {
+  Future<void> _handleComplete() async {
     if (_completed) return;
     _completed = true;
 
@@ -105,7 +105,7 @@ class _FocusTimerPageState extends ConsumerState<FocusTimerPage>
     final task = store.findTask(widget.taskId);
     final project = task != null ? store.findProject(task.projectId) : null;
 
-    store.addSession(
+    await store.addSession(
       taskId: widget.taskId,
       taskTitle: task?.title ?? 'Unknown',
       projectName: project?.name,
@@ -135,7 +135,7 @@ class _FocusTimerPageState extends ConsumerState<FocusTimerPage>
     if (mounted) context.go('/');
   }
 
-  void _handleSaveEnd() {
+  Future<void> _handleSaveEnd() async {
     if (_completed) return;
     _completed = true;
 
@@ -144,7 +144,7 @@ class _FocusTimerPageState extends ConsumerState<FocusTimerPage>
     final project = task != null ? store.findProject(task.projectId) : null;
     final focusedDuration = initialTime - timeLeft;
 
-    store.addSession(
+    await store.addSession(
       taskId: widget.taskId,
       taskTitle: task?.title ?? 'Unknown',
       projectName: project?.name,

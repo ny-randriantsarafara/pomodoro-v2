@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import 'package:go_router/go_router.dart';
 import '../../shared/widgets/app_icon.dart';
+import '../../store/providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_shadows.dart';
@@ -9,14 +11,16 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class DesktopHeader extends StatelessWidget {
+class DesktopHeader extends ConsumerWidget {
   const DesktopHeader({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final location = GoRouterState.of(context).uri.path;
     final isFocus = location == '/';
     final isRhythm = location == '/history';
+    final authRepo = ref.watch(authRepositoryProvider);
+    final isAuthenticated = authRepo.currentUser != null;
 
     return Container(
       decoration: BoxDecoration(
@@ -84,7 +88,13 @@ class DesktopHeader extends StatelessWidget {
                     MouseRegion(
                       cursor: SystemMouseCursors.click,
                       child: GestureDetector(
-                        onTap: () => context.go('/auth'),
+                        onTap: () {
+                          if (isAuthenticated) {
+                            authRepo.signOut();
+                          } else {
+                            context.go('/auth');
+                          }
+                        },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.lg,
@@ -95,7 +105,7 @@ class DesktopHeader extends StatelessWidget {
                             borderRadius: AppRadii.borderLg,
                           ),
                           child: Text(
-                            'Sign In',
+                            isAuthenticated ? 'Sign Out' : 'Sign In',
                             style: AppTypography.bodySm.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.neutral600,
@@ -147,18 +157,15 @@ class _NavTab extends StatelessWidget {
               Icon(
                 icon,
                 size: 16,
-                color: isActive
-                    ? AppColors.neutral900
-                    : AppColors.neutral500,
+                color: isActive ? AppColors.neutral900 : AppColors.neutral500,
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 label,
                 style: AppTypography.bodySm.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: isActive
-                      ? AppColors.neutral900
-                      : AppColors.neutral500,
+                  color:
+                      isActive ? AppColors.neutral900 : AppColors.neutral500,
                 ),
               ),
             ],

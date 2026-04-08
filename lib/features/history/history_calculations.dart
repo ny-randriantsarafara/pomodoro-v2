@@ -65,7 +65,8 @@ List<TaskStat> buildTopTaskStats(
 ) {
   final Map<String, List<Session>> grouped = {};
   for (final s in sessions) {
-    grouped.putIfAbsent(s.taskId, () => []).add(s);
+    final key = s.taskId ?? s.id;
+    grouped.putIfAbsent(key, () => []).add(s);
   }
 
   final stats = grouped.entries.map((entry) {

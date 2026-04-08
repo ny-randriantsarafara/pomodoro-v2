@@ -1,26 +1,10 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 abstract class AuthRepository {
-  Future<bool> signIn({required String email, required String password});
-  Future<bool> signUp({
-    required String name,
-    required String email,
-    required String password,
-  });
-}
-
-class MockAuthRepository implements AuthRepository {
-  @override
-  Future<bool> signIn({required String email, required String password}) async {
-    await Future.delayed(const Duration(milliseconds: 1500));
-    return true;
-  }
-
-  @override
-  Future<bool> signUp({
-    required String name,
-    required String email,
-    required String password,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 1500));
-    return true;
-  }
+  Future<void> signInWithMagicLink(String email);
+  Future<void> signInWithGoogle();
+  Future<void> signInWithApple();
+  Future<void> signOut();
+  Stream<AuthState> get onAuthStateChange;
+  User? get currentUser;
 }
