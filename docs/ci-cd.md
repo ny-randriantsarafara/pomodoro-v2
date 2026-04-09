@@ -2,6 +2,13 @@
 
 Rhythm uses a **Makefile** as the single entry point for automation. The same targets work locally and on GitHub Actions.
 
+## Principles
+
+- **Makefile is the interface.** Both humans and CI call `make <target>`. No workflow-only logic.
+- **Fastlane handles Apple.** Building, signing, and TestFlight upload go through Fastlane lanes.
+- **Two independent pipelines.** Apple and Supabase deploy separately — different triggers, different runners.
+- **No `if CI` conditionals.** Tools resolve credentials from the environment transparently.
+
 ## Prerequisites
 
 - Flutter SDK (stable channel)
@@ -109,6 +116,17 @@ CI runs on every push. TestFlight and Supabase deploy on merges to `main` or via
 - **Trigger:** push to `main`, manual
 - **Runner:** `ubuntu-latest`
 - **Steps:** link project, push migrations, deploy edge functions
+
+## Local vs CI parity
+
+| Concern | Local | CI |
+|---------|-------|-----|
+| Code signing | Keychain | Match decrypts into temporary keychain |
+| Apple auth (TestFlight) | Apple session / API key in env | API key from GitHub secrets |
+| Supabase auth | `supabase login` session | `SUPABASE_ACCESS_TOKEN` env var |
+| SSH for Match repo | Your SSH key | `MATCH_GIT_PRIVATE_KEY` injected |
+| Flutter SDK | Already installed | `subosito/flutter-action` |
+| Ruby / Fastlane | `bundle install` via `make setup` | Same |
 
 ## Adding a new signing profile
 
