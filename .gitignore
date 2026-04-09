@@ -59,3 +59,6 @@ fastlane/README.md
 # Generated Fastlane config (contains credentials)
 fastlane/Appfile
 fastlane/Matchfile
+
+# Supabase
+supabase/.temp/
