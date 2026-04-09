@@ -30,6 +30,22 @@ class Task {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'project_id': projectId,
+        'completed': completed,
+        'created_at': createdAt.toUtc().toIso8601String(),
+      };
+
+  factory Task.fromJson(Map<String, dynamic> json) => Task(
+        id: json['id'] as String,
+        title: json['title'] as String,
+        projectId: json['project_id'] as String?,
+        completed: json['completed'] as bool? ?? false,
+        createdAt: DateTime.parse(json['created_at'] as String),
+      );
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) || other is Task && other.id == id;

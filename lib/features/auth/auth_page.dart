@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import '../../shared/logging/app_logger.dart';
 import '../../store/providers.dart';
+import 'auth_user_message.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
 import 'widgets/auth_background_blobs.dart';
 import 'widgets/auth_card.dart';
-import 'widgets/floating_sparkles.dart';
 
 class AuthPage extends ConsumerStatefulWidget {
   const AuthPage({super.key});
@@ -19,54 +18,86 @@ class AuthPage extends ConsumerStatefulWidget {
 }
 
 class _AuthPageState extends ConsumerState<AuthPage> {
-  bool isSignUp = false;
   bool isLoading = false;
-
+  String? message;
   final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final nameController = TextEditingController();
   final emailFocus = FocusNode();
-  final passwordFocus = FocusNode();
-  final nameFocus = FocusNode();
 
   @override
   void dispose() {
     emailController.dispose();
-    passwordController.dispose();
-    nameController.dispose();
     emailFocus.dispose();
-    passwordFocus.dispose();
-    nameFocus.dispose();
     super.dispose();
   }
 
-  Future<void> _handleSubmit() async {
-    setState(() => isLoading = true);
-    final authRepo = ref.read(authRepositoryProvider);
-
+  Future<void> _handleMagicLink() async {
+    final email = emailController.text.trim();
+    if (email.isEmpty) return;
+    setState(() {
+      isLoading = true;
+      message = null;
+    });
     try {
-      if (isSignUp) {
-        await authRepo.signUp(
-          name: nameController.text,
-          email: emailController.text,
-          password: passwordController.text,
-        );
-      } else {
-        await authRepo.signIn(
-          email: emailController.text,
-          password: passwordController.text,
-        );
+      final authRepo = ref.read(authRepositoryProvider);
+      await authRepo.signInWithMagicLink(email);
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          message = 'Check your email for the login link!';
+        });
       }
-      if (mounted) context.go('/');
-    } finally {
-      if (mounted) setState(() => isLoading = false);
+    } catch (e, st) {
+      AppLogger.error(
+        domain: 'auth',
+        event: 'magic_link_request_failed',
+        context: {
+          'action': 'signInWithMagicLink',
+          'email': email,
+        },
+        error: e,
+        stackTrace: st,
+      );
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          message = userVisibleAuthErrorMessage(e);
+        });
+      }
+    }
+  }
+
+  Future<void> _handleGoogle() async {
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      await authRepo.signInWithGoogle();
+    } catch (e, st) {
+      AppLogger.error(
+        domain: 'auth',
+        event: 'oauth_google_failed',
+        context: {'action': 'signInWithGoogle'},
+        error: e,
+        stackTrace: st,
+      );
+    }
+  }
+
+  Future<void> _handleApple() async {
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      await authRepo.signInWithApple();
+    } catch (e, st) {
+      AppLogger.error(
+        domain: 'auth',
+        event: 'oauth_apple_failed',
+        context: {'action': 'signInWithApple'},
+        error: e,
+        stackTrace: st,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLargeScreen = MediaQuery.of(context).size.width >= 1024;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -106,71 +137,26 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 420),
                             child: _AuthGlassPanel(
                               child: AuthCard(
-                                isSignUp: isSignUp,
                                 isLoading: isLoading,
+                                message: message,
                                 emailController: emailController,
-                                passwordController: passwordController,
-                                nameController: nameController,
                                 emailFocus: emailFocus,
-                                passwordFocus: passwordFocus,
-                                nameFocus: nameFocus,
-                                onSubmit: _handleSubmit,
-                                onToggleMode: () =>
-                                    setState(() => isSignUp = !isSignUp),
+                                onMagicLink: _handleMagicLink,
+                                onGoogle: _handleGoogle,
+                                onApple: _handleApple,
                               ),
                             ),
                           ),
-                          if (isLargeScreen) ...[
-                            const SizedBox(height: AppSpacing.xxl),
-                            FloatingSparkles(visible: isSignUp),
-                          ],
                         ],
                       ),
                     ),
                   );
                 },
-              ),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.sm,
-                ),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: GestureDetector(
-                    onTap: () => context.go('/'),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.white.withValues(alpha: 0.5),
-                        borderRadius: AppRadii.borderLg,
-                        border: Border.all(
-                          color: AppColors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      child: const Icon(
-                        LucideIcons.arrowLeft,
-                        size: 20,
-                        color: AppColors.neutral600,
-                      ),
-                    ),
-                  ),
-                ),
               ),
             ),
           ),
@@ -180,11 +166,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 }
 
-/// Frosted panel: semi-transparent fill and border work on mobile, web, and
-/// desktop without relying on [BackdropFilter], which is inconsistent there.
 class _AuthGlassPanel extends StatelessWidget {
   final Widget child;
-
   const _AuthGlassPanel({required this.child});
 
   @override
@@ -209,7 +192,6 @@ class _AuthGlassPanel extends StatelessWidget {
             color: AppColors.white.withValues(alpha: 0.45),
             blurRadius: 0,
             offset: const Offset(0, 1),
-            spreadRadius: 0,
           ),
         ],
       ),

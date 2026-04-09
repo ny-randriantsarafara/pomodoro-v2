@@ -13,6 +13,17 @@ class ProjectStyle {
           other.background == background &&
           other.foreground == foreground;
 
+  static String colorToHex(Color c) {
+    final argb = c.toARGB32();
+    return '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+  }
+
+  static Color colorFromHex(String hex) {
+    final value = int.parse(hex.substring(1), radix: 16);
+    return Color.fromARGB(
+        255, (value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF);
+  }
+
   @override
   int get hashCode => Object.hash(background, foreground);
 }
@@ -66,6 +77,22 @@ class Project {
       style: style ?? this.style,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'bg_color': ProjectStyle.colorToHex(style.background),
+        'fg_color': ProjectStyle.colorToHex(style.foreground),
+      };
+
+  factory Project.fromJson(Map<String, dynamic> json) => Project(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        style: ProjectStyle(
+          background: ProjectStyle.colorFromHex(json['bg_color'] as String),
+          foreground: ProjectStyle.colorFromHex(json['fg_color'] as String),
+        ),
+      );
 
   @override
   bool operator ==(Object other) =>

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../features/layout/app_shell.dart';
 import '../features/home/home_page.dart';
@@ -6,12 +7,20 @@ import '../features/history/history_page.dart';
 import '../features/auth/auth_page.dart';
 import '../features/focus/focus_timer_page.dart';
 import '../features/break_timer/break_timer_page.dart';
+import '../store/providers.dart';
 
-class AppRouter {
-  AppRouter._();
-
-  static final router = GoRouter(
+GoRouter createRouter(Ref ref) {
+  final authRepo = ref.read(authRepositoryProvider);
+  return GoRouter(
     initialLocation: '/',
+    redirect: (context, state) {
+      final isAuthenticated = authRepo.currentUser != null;
+      final isOnAuth = state.matchedLocation == '/auth';
+
+      if (isAuthenticated && isOnAuth) return '/';
+      return null;
+    },
+    refreshListenable: _AuthNotifier(ref),
     routes: [
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),
@@ -82,4 +91,12 @@ class AppRouter {
       ),
     ],
   );
+}
+
+class _AuthNotifier extends ChangeNotifier {
+  _AuthNotifier(this._ref) {
+    _ref.listen(authStateProvider, (_, _) => notifyListeners());
+  }
+
+  final Ref _ref; // ignore: unused_field
 }
