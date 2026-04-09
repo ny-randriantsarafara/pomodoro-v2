@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  ci:
+    name: Analyze, Test & Build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Setup
+        run: make setup
+
+      - name: Analyze & Test
+        run: make ci
+
+      - name: Build iOS
+        run: make build-ios
+        continue-on-error: true
+
+      - name: Build macOS
+        run: make build-macos
+        continue-on-error: true
