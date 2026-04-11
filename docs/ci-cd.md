@@ -38,8 +38,10 @@ make sync-signing       # Create/fetch signing certs via Match
 | `make build-ios` | Build iOS IPA |
 | `make build-macos` | Build macOS app |
 | `make deploy-testflight` | Build + upload iOS to TestFlight |
+| `make deploy-macos-testflight` | Build + upload macOS to TestFlight |
 | `make deploy-supabase` | Push migrations + deploy edge functions |
-| `make sync-signing` | Sync signing certs/profiles via Match |
+| `make sync-signing` | Sync iOS signing certs/profiles via Match |
+| `make sync-signing-macos` | Sync macOS signing certs/profiles via Match |
 
 ## One-time setup
 
@@ -115,6 +117,12 @@ CI runs on every push. TestFlight and Supabase deploy on merges to `main` or via
 - **Runner:** `macos-latest`
 - **Steps:** sync signing, build iOS, upload to TestFlight
 - **Build number:** Fastlane auto-sets a unique iOS build number for uploads. It prefers `IOS_BUILD_NUMBER`, then `GITHUB_RUN_NUMBER` on CI, and falls back to a UTC timestamp for local/manual runs.
+
+### macOS TestFlight (`deploy-macos-testflight.yml`)
+- **Trigger:** push to `main`, manual
+- **Runner:** `macos-latest`
+- **Steps:** sync macOS signing, build macOS, upload to TestFlight
+- **Build number:** Same pattern as iOS. Prefers `MACOS_BUILD_NUMBER`, then `GITHUB_RUN_NUMBER` on CI, and falls back to a UTC timestamp for local/manual runs.
 
 ### Supabase (`deploy-supabase.yml`)
 - **Trigger:** push to `main`, manual

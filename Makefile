@@ -1,7 +1,7 @@
-.PHONY: setup setup-fastlane analyze test ci build-ios build-macos deploy-testflight deploy-supabase sync-signing help
+.PHONY: setup setup-fastlane analyze test ci build-ios build-macos deploy-testflight deploy-macos-testflight deploy-supabase sync-signing sync-signing-macos help
 
 help: ## Show available targets
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-26s\033[0m %s\n", $$1, $$2}'
 
 setup: ## Install Flutter deps, iOS pods, and Fastlane
 	flutter pub get
@@ -43,9 +43,15 @@ build-macos: ## Build macOS app via Fastlane
 deploy-testflight: ## Build and upload iOS to TestFlight
 	bundle exec fastlane ios testflight_upload
 
+deploy-macos-testflight: ## Build and upload macOS to TestFlight
+	bundle exec fastlane mac testflight_upload
+
 deploy-supabase: ## Deploy Supabase migrations and edge functions
 	supabase db push
 	supabase functions deploy
 
-sync-signing: ## Sync signing certificates via Match
+sync-signing: ## Sync iOS signing certificates via Match
 	bundle exec fastlane ios sync_signing
+
+sync-signing-macos: ## Sync macOS signing certificates via Match
+	bundle exec fastlane mac sync_signing
