@@ -3,7 +3,12 @@ default_platform(:ios)
 platform :ios do
   desc "Sync signing certificates and profiles via Match"
   lane :sync_signing do
-    match(type: "appstore", readonly: is_ci)
+    match(
+      type: "appstore",
+      git_url: ENV["MATCH_GIT_URL"],
+      app_identifier: ENV["MATCH_APP_IDENTIFIER"] || "com.nyhasinavalona.rhythm",
+      readonly: is_ci
+    )
   end
 
   desc "Build iOS release IPA"

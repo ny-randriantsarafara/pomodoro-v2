@@ -78,7 +78,7 @@ First run creates certificates and provisioning profiles, encrypts them, and pus
 
 1. Go to [App Store Connect > Users and Access > Keys](https://appstoreconnect.apple.com/access/api)
 2. Create a new key with "App Manager" role
-3. Note the **Key ID** and **Issuer ID**
+3. Note the **Key ID** and **Issuer ID**: BKW267S59W and d5c120e1-2643-4429-8513-ca705f7717ab
 4. Download the `.p8` file
 5. Base64-encode it: `base64 -i AuthKey_XXXX.p8`
 
