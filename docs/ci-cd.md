@@ -20,7 +20,7 @@ Rhythm uses a **Makefile** as the single entry point for automation. The same ta
 ## Quick start
 
 ```bash
-make setup              # Install Flutter deps + iOS pods + Fastlane
+make setup              # Install Flutter deps + macOS/iOS build files + pods + Fastlane
 make setup-fastlane     # Interactive — generates Appfile + Matchfile
 make sync-signing       # Create/fetch signing certs via Match
 ```
@@ -30,7 +30,7 @@ make sync-signing       # Create/fetch signing certs via Match
 | Target | Description |
 |--------|------------|
 | `make help` | List all targets |
-| `make setup` | Install Flutter deps + iOS pods + Fastlane |
+| `make setup` | Install Flutter deps + macOS/iOS build files + pods + Fastlane |
 | `make setup-fastlane` | Generate Appfile + Matchfile interactively |
 | `make analyze` | Run Flutter static analysis |
 | `make test` | Run Flutter tests |
