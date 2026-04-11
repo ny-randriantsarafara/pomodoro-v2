@@ -1,0 +1,51 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Sync signing certificates and profiles via Match"
+  lane :sync_signing do
+    match(type: "appstore", readonly: is_ci)
+  end
+
+  desc "Build iOS release IPA"
+  lane :build_ios do
+    sync_signing
+
+    build_app(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "build/ios",
+      output_name: "Rhythm.ipa"
+    )
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :testflight_upload do
+    build_ios
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY"],
+      is_key_content_base64: true
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
+
+platform :mac do
+  desc "Build macOS release app"
+  lane :build_macos do
+    build_app(
+      workspace: "macos/Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "build/macos",
+      output_name: "Rhythm.app"
+    )
+  end
+end
