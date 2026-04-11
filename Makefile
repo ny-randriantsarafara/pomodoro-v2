@@ -3,8 +3,9 @@
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-setup: ## Install Flutter deps and Fastlane
+setup: ## Install Flutter deps, iOS pods, and Fastlane
 	flutter pub get
+	cd ios && pod install
 	bundle install
 
 setup-fastlane: ## Interactive setup — generates Appfile and Matchfile

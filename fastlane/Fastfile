@@ -13,6 +13,7 @@ platform :ios do
 
   desc "Build iOS release IPA"
   lane :build_ios do
+    setup_ci
     sync_signing
 
     build_app(
@@ -31,7 +32,7 @@ platform :ios do
     api_key = app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_KEY"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
       is_key_content_base64: true
     )
 

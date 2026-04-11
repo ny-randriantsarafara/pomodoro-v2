@@ -13,13 +13,14 @@ Rhythm uses a **Makefile** as the single entry point for automation. The same ta
 
 - Flutter SDK (stable channel)
 - Ruby 3.2+ and Bundler
+- CocoaPods (`pod`)
 - Supabase CLI (`brew install supabase/tap/supabase`)
 - Xcode with command-line tools
 
 ## Quick start
 
 ```bash
-make setup              # Install Flutter deps + Fastlane
+make setup              # Install Flutter deps + iOS pods + Fastlane
 make setup-fastlane     # Interactive — generates Appfile + Matchfile
 make sync-signing       # Create/fetch signing certs via Match
 ```
@@ -29,7 +30,7 @@ make sync-signing       # Create/fetch signing certs via Match
 | Target | Description |
 |--------|------------|
 | `make help` | List all targets |
-| `make setup` | Install Flutter deps + Fastlane |
+| `make setup` | Install Flutter deps + iOS pods + Fastlane |
 | `make setup-fastlane` | Generate Appfile + Matchfile interactively |
 | `make analyze` | Run Flutter static analysis |
 | `make test` | Run Flutter tests |
@@ -96,6 +97,8 @@ Go to your repo > Settings > Secrets and variables > Actions. Add:
 | `SUPABASE_ACCESS_TOKEN` | From `supabase token` or dashboard |
 | `SUPABASE_PROJECT_ID` | Your Supabase project reference ID |
 
+Note: the workflow maps the `APP_STORE_CONNECT_API_KEY` secret to an internal env var named `APP_STORE_CONNECT_API_KEY_CONTENT` before calling Fastlane. This avoids Fastlane's reserved `APP_STORE_CONNECT_API_KEY` env name colliding with `match`'s `api_key` option.
+
 ### 7. Push
 
 CI runs on every push. TestFlight and Supabase deploy on merges to `main` or via manual trigger in the Actions tab.
@@ -121,7 +124,7 @@ CI runs on every push. TestFlight and Supabase deploy on merges to `main` or via
 
 | Concern | Local | CI |
 |---------|-------|-----|
-| Code signing | Keychain | Match decrypts into temporary keychain |
+| Code signing | Keychain | Fastlane `setup_ci` creates an unlocked temporary keychain, then Match imports signing assets there |
 | Apple auth (TestFlight) | Apple session / API key in env | API key from GitHub secrets |
 | Supabase auth | `supabase login` session | `SUPABASE_ACCESS_TOKEN` env var |
 | SSH for Match repo | Your SSH key | `MATCH_GIT_PRIVATE_KEY` injected |
