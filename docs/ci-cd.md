@@ -114,6 +114,7 @@ CI runs on every push. TestFlight and Supabase deploy on merges to `main` or via
 - **Trigger:** push to `main`, manual
 - **Runner:** `macos-latest`
 - **Steps:** sync signing, build iOS, upload to TestFlight
+- **Build number:** Fastlane auto-sets a unique iOS build number for uploads. It prefers `IOS_BUILD_NUMBER`, then `GITHUB_RUN_NUMBER` on CI, and falls back to a UTC timestamp for local/manual runs.
 
 ### Supabase (`deploy-supabase.yml`)
 - **Trigger:** push to `main`, manual

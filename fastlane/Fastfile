@@ -1,4 +1,26 @@
+require "shellwords"
+
 default_platform(:ios)
+
+def first_present_env(*names)
+  names.each do |name|
+    value = ENV[name].to_s.strip
+    return value unless value.empty?
+  end
+
+  nil
+end
+
+def resolved_testflight_build_number
+  first_present_env("IOS_BUILD_NUMBER", "GITHUB_RUN_NUMBER") || Time.now.utc.strftime("%Y%m%d%H%M%S")
+end
+
+def flutter_xcargs
+  build_number = first_present_env("FLUTTER_BUILD_NUMBER")
+  return nil unless build_number
+
+  "FLUTTER_BUILD_NUMBER=#{build_number.shellescape}"
+end
 
 platform :ios do
   desc "Sync signing certificates and profiles via Match"
@@ -16,17 +38,24 @@ platform :ios do
     setup_ci
     sync_signing
 
-    build_app(
+    build_options = {
       workspace: "ios/Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
       output_directory: "build/ios",
       output_name: "Rhythm.ipa"
-    )
+    }
+
+    xcargs = flutter_xcargs
+    build_options[:xcargs] = xcargs if xcargs
+
+    build_app(**build_options)
   end
 
   desc "Build and upload to TestFlight"
   lane :testflight_upload do
+    ENV["FLUTTER_BUILD_NUMBER"] = first_present_env("FLUTTER_BUILD_NUMBER") || resolved_testflight_build_number
+
     build_ios
 
     api_key = app_store_connect_api_key(
