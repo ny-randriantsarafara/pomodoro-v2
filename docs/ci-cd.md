@@ -103,7 +103,7 @@ Note: the workflow maps the `APP_STORE_CONNECT_API_KEY` secret to an internal en
 
 ### 7. Push
 
-CI runs on every push. TestFlight and Supabase deploy on merges to `main` or via manual trigger in the Actions tab.
+CI runs on every push. The iOS and macOS TestFlight workflows now auto-start only after the `CI` workflow succeeds for `main`, and both remain available via manual trigger in the Actions tab. Supabase still deploys on merges to `main` or via manual trigger.
 
 ## Pipelines
 
@@ -113,15 +113,15 @@ CI runs on every push. TestFlight and Supabase deploy on merges to `main` or via
 - **Steps:** analyze, test, build iOS, build macOS
 
 ### TestFlight (`deploy-testflight.yml`)
-- **Trigger:** push to `main`, manual
+- **Trigger:** manual, or automatic after `CI` succeeds on `main`
 - **Runner:** `macos-latest`
-- **Steps:** sync signing, build iOS, upload to TestFlight
+- **Steps:** check out the exact CI-passed commit, sync signing, build iOS, upload to TestFlight
 - **Build number:** Fastlane auto-sets a unique iOS build number for uploads. It prefers `IOS_BUILD_NUMBER`, then `GITHUB_RUN_NUMBER` on CI, and falls back to a UTC timestamp for local/manual runs.
 
 ### macOS TestFlight (`deploy-macos-testflight.yml`)
-- **Trigger:** push to `main`, manual
+- **Trigger:** manual, or automatic after `CI` succeeds on `main`
 - **Runner:** `macos-latest`
-- **Steps:** sync macOS signing, build macOS, upload to TestFlight
+- **Steps:** check out the exact CI-passed commit, build macOS, upload to TestFlight
 - **Build number:** Same pattern as iOS. Prefers `MACOS_BUILD_NUMBER`, then `GITHUB_RUN_NUMBER` on CI, and falls back to a UTC timestamp for local/manual runs.
 
 ### Supabase (`deploy-supabase.yml`)
