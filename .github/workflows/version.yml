@@ -28,9 +28,9 @@ jobs:
           MSG=$(git log -1 --format='%s' "$HEAD_SHA")
           BODY=$(git log -1 --format='%b' "$HEAD_SHA")
           echo "message=$MSG" >> "$GITHUB_OUTPUT"
-          echo "body<<EOF" >> "$GITHUB_OUTPUT"
+          echo "body<<BODY_DELIMITER_EOF" >> "$GITHUB_OUTPUT"
           echo "$BODY" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "BODY_DELIMITER_EOF" >> "$GITHUB_OUTPUT"
 
       - name: Determine bump level
         id: bump
@@ -45,9 +45,9 @@ jobs:
             exit 0
           fi
 
-          # Extract type from conventional commit prefix
-          TYPE=$(echo "$COMMIT_MSG" | sed -n 's/^\([a-z]*\)\(([^)]*)\)\?!\?:.*/\1/p')
-          BANG=$(echo "$COMMIT_MSG" | sed -n 's/^[a-z]*\(([^)]*)\)\?\(!\)\?:.*/\2/p')
+          # Extract type from conventional commit prefix (ERE for POSIX portability)
+          TYPE=$(echo "$COMMIT_MSG" | sed -En 's/^([a-z]+)(\([^)]*\))?!?:.*/\1/p')
+          BANG=$(echo "$COMMIT_MSG" | sed -En 's/^[a-z]+(\([^)]*\))?(!)?.*/\2/p')
 
           if [[ "$BANG" == "!" ]]; then
             echo "level=major" >> "$GITHUB_OUTPUT"
@@ -88,6 +88,10 @@ jobs:
             patch)
               PATCH=$((PATCH + 1))
               ;;
+            *)
+              echo "::error::Unknown bump level: '$BUMP_LEVEL'. Defaulting to patch."
+              PATCH=$((PATCH + 1))
+              ;;
           esac
 
           NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
@@ -101,6 +105,11 @@ jobs:
           NEW_TAG: ${{ steps.version.outputs.new_tag }}
           SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
+          # Guard: skip if this SHA is already tagged (e.g. manual CI re-run)
+          if git describe --tags --exact-match "$SHA" 2>/dev/null; then
+            echo "SHA $SHA is already tagged. Skipping release."
+            exit 0
+          fi
           git tag -a "$NEW_TAG" "$SHA" -m "Release $NEW_TAG"
           git push origin "$NEW_TAG"
           gh release create "$NEW_TAG" \
