@@ -29,10 +29,8 @@ jobs:
       - name: Analyze & Test
         run: make ci
 
-      - name: Build iOS
-        run: make build-ios
-        continue-on-error: true
+      - name: Build iOS (no signing)
+        run: flutter build ios --no-codesign
 
-      - name: Build macOS
-        run: make build-macos
-        continue-on-error: true
+      - name: Build macOS (debug)
+        run: flutter build macos --debug
