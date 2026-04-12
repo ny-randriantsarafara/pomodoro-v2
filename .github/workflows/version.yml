@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -121,3 +122,12 @@ jobs:
             --target "$SHA" \
             --title "$NEW_TAG" \
             --generate-notes
+
+      - name: Trigger deploy workflows
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEW_TAG: ${{ steps.version.outputs.new_tag }}
+        run: |
+          gh workflow run deploy-testflight.yml --ref "$NEW_TAG"
+          gh workflow run deploy-macos-testflight.yml --ref "$NEW_TAG"
