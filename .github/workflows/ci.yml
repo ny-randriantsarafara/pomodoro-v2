@@ -32,5 +32,13 @@ jobs:
       - name: Build iOS (no signing)
         run: flutter build ios --no-codesign
 
-      - name: Build macOS (debug)
-        run: flutter build macos --debug
+      - name: Build macOS (no signing)
+        run: |
+          flutter build macos --debug --config-only
+          xcodebuild build \
+            -workspace macos/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
