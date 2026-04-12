@@ -19,11 +19,20 @@ def resolved_macos_build_number
   first_present_env("MACOS_BUILD_NUMBER", "GITHUB_RUN_NUMBER") || Time.now.utc.strftime("%Y%m%d%H%M%S")
 end
 
-def flutter_xcargs
-  build_number = first_present_env("FLUTTER_BUILD_NUMBER")
-  return nil unless build_number
+def resolved_build_name
+  first_present_env("FLUTTER_BUILD_NAME")
+end
 
-  "FLUTTER_BUILD_NUMBER=#{build_number.shellescape}"
+def flutter_xcargs
+  parts = []
+
+  build_number = first_present_env("FLUTTER_BUILD_NUMBER")
+  parts << "FLUTTER_BUILD_NUMBER=#{build_number.shellescape}" if build_number
+
+  build_name = resolved_build_name
+  parts << "FLUTTER_BUILD_NAME=#{build_name.shellescape}" if build_name
+
+  parts.empty? ? nil : parts.join(" ")
 end
 
 def app_store_connect_api_key_from_env
