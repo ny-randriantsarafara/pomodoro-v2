@@ -43,9 +43,11 @@ build-macos: ## Build macOS app via Fastlane
 	bundle exec fastlane mac build_macos
 
 deploy-testflight: ## Build and upload iOS to TestFlight
+	flutter build ios --release --no-codesign --dart-define-from-file=.env
 	bundle exec fastlane ios testflight_upload
 
 deploy-macos-testflight: ## Build and upload macOS to TestFlight
+	flutter build macos --release --dart-define-from-file=.env
 	bundle exec fastlane mac testflight_upload
 
 deploy-supabase: ## Deploy Supabase migrations and edge functions
