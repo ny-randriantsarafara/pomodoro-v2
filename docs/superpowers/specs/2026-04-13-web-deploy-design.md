@@ -21,7 +21,11 @@ Flutter web produces a static bundle (`build/web/`). It is served by an nginx co
 
 ### Why not the reusable `build-image.yml`
 
-The reusable workflow does not support Docker `--build-arg`, so dart-defines (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) cannot be injected at image build time through it. The web deploy workflow builds and pushes the image inline instead.
+The reusable workflow does not support Docker `--build-arg`, so dart-defines cannot be injected at image build time through it. The web deploy workflow builds and pushes the image inline instead.
+
+### `.env` source
+
+The `.env` file (containing `SUPABASE_URL`, `SUPABASE_ANON_KEY`, etc.) lives on the VPS at `~/.env`. The CI fetches it via `scp` before running `flutter build web --dart-define-from-file=.env`, using the existing `VPS_SSH_KEY` / `VPS_HOST_KEY` / `VPS_USER` / `VPS_HOST` secrets. No new GitHub secrets are needed for Supabase config.
 
 ---
 
@@ -85,15 +89,11 @@ Triggers on push to `main`. Runs on `ubuntu-latest`.
 **Jobs:**
 
 1. **validate** — `flutter pub get && make ci` (`flutter analyze && flutter test`)
-2. **build-and-push** (needs validate) — single job: `flutter pub get`, `flutter build web --release --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...`, then inline `docker/build-push-action` using `Dockerfile.web`. Flutter build and Docker build must be in the same job because `docker build` needs the `build/web/` output on the same runner. Image: `ghcr.io/ny-randriantsarafara/pomodoro-web`, tags `latest` + `sha-<short>`.
+2. **build-and-push** (needs validate) — single job: SSH into VPS to `scp ~/.env`, then `flutter pub get`, `flutter build web --release --dart-define-from-file=.env`, then inline `docker/build-push-action` using `Dockerfile.web`. Flutter build and Docker build must be in the same job because `docker build` needs the `build/web/` output on the same runner. Image: `ghcr.io/ny-randriantsarafara/pomodoro-web`, tags `latest` + `sha-<short>`.
 3. **deploy** (needs build-and-push) — calls `ny-randriantsarafara/vps-services/.github/workflows/deploy-compose.yml@main` with `compose_file: deploy/docker-compose.web.yml`, `services: pomodoro`
 
-**Required GitHub secrets (new):**
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-
-**Existing secrets reused:**
-- `VPS_USER`, `VPS_HOST`, `VPS_SSH_KEY`, `VPS_HOST_KEY`
+**No new GitHub secrets required.** All secrets already exist:
+- `VPS_USER`, `VPS_HOST`, `VPS_SSH_KEY`, `VPS_HOST_KEY` — used by `build-and-push` (fetch `.env`) and `deploy`
 
 ### `Makefile` — new target
 
@@ -116,8 +116,27 @@ build-web: ## Build Flutter web release
 ## Manual steps (outside CI)
 
 1. **Supabase Cloud dashboard** — add `https://pomodoro.nyhasinavalona.com` as an allowed redirect URL under Authentication → URL Configuration.
-2. **GitHub** — add secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY` to the `pomodoro` repo.
-3. **GitHub** — archive the `pomodoro-legacy` repo.
+2. **GitHub** — archive the `pomodoro-legacy` repo.
+
+---
+
+## Changes to existing files
+
+### `.github/workflows/ci.yml` — add `paths-ignore`
+
+To prevent the expensive `macos-15` mobile builds from triggering on web-only changes (deploy config, Dockerfile, nginx config, workflow files), add `paths-ignore` to the push trigger:
+
+```yaml
+on:
+  push:
+    branches: ['**']
+    paths-ignore:
+      - 'deploy/**'
+      - 'Dockerfile.web'
+      - 'nginx.conf'
+      - '.github/workflows/deploy-web.yml'
+      - 'docs/**'
+```
 
 ---
 
@@ -125,5 +144,4 @@ build-web: ## Build Flutter web release
 
 - `vps-services` Caddyfile — unchanged (`{$POMODORO_DOMAIN} { reverse_proxy pomodoro:3000 }`)
 - `vps-services` docker-compose.yml — unchanged
-- `ci.yml` in `pomodoro` repo — mobile CI unchanged, runs independently on `macos-15`
 - Supabase Cloud project — no schema or data changes
