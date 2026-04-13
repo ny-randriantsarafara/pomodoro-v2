@@ -8,6 +8,8 @@ class AppLogoIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = size * 0.3125;
+    final physicalSize =
+        (size * MediaQuery.devicePixelRatioOf(context)).round();
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Image.asset(
@@ -15,6 +17,8 @@ class AppLogoIcon extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
+        cacheWidth: physicalSize,
+        cacheHeight: physicalSize,
       ),
     );
   }
