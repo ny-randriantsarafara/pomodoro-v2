@@ -4,9 +4,16 @@ on:
   push:
     branches: [main]
     paths-ignore:
+      - 'ios/**'
+      - 'macos/**'
+      - 'android/**'
+      - 'linux/**'
+      - 'windows/**'
+      - 'fastlane/**'
       - 'supabase/**'
       - 'docs/**'
-      - 'fastlane/**'
+      - 'Gemfile'
+      - 'Gemfile.lock'
 
 permissions:
   contents: read
@@ -14,20 +21,7 @@ permissions:
 
 jobs:
   validate:
-    name: Analyze & Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Analyze & Test
-        run: make ci
+    uses: ./.github/workflows/validate.yml
 
   build-and-push:
     name: Build web & push image
@@ -82,7 +76,7 @@ jobs:
       deploy_dir: /home/deploy/apps/pomodoro
       compose_file: deploy/docker-compose.web.yml
       services: pomodoro
-      runtime_env: "APP_ENV=production"
+      runtime_env: "IMAGE_TAG=sha-${{ github.sha }}"
       health_retries: 15
       health_interval: 5
     secrets:
