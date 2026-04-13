@@ -1,4 +1,4 @@
-.PHONY: setup setup-fastlane analyze test ci build-ios build-macos deploy-testflight deploy-macos-testflight deploy-supabase sync-signing sync-signing-macos help
+.PHONY: setup setup-fastlane analyze test ci build-web build-ios build-macos deploy-testflight deploy-macos-testflight deploy-supabase sync-signing sync-signing-macos help
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-26s\033[0m %s\n", $$1, $$2}'
@@ -35,6 +35,9 @@ test: ## Run Flutter tests
 	flutter test
 
 ci: analyze test ## Run analyze + test
+
+build-web: ## Build Flutter web release
+	flutter build web --release --dart-define-from-file=.env
 
 build-ios: ## Build iOS IPA via Fastlane
 	bundle exec fastlane ios build_ios

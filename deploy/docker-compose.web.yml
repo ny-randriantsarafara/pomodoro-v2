@@ -1,0 +1,17 @@
+services:
+  pomodoro:
+    container_name: pomodoro
+    image: ghcr.io/ny-randriantsarafara/pomodoro-web:latest
+    restart: unless-stopped
+    networks:
+      - vps-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+networks:
+  vps-net:
+    external: true
