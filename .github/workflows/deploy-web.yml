@@ -3,6 +3,10 @@ name: Deploy Web
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'supabase/**'
+      - 'docs/**'
+      - 'fastlane/**'
 
 permissions:
   contents: read
