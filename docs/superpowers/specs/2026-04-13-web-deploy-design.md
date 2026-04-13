@@ -25,7 +25,7 @@ The reusable workflow does not support Docker `--build-arg`, so dart-defines can
 
 ### `.env` source
 
-The `.env` file (containing `SUPABASE_URL`, `SUPABASE_ANON_KEY`, etc.) lives on the VPS at `~/.env`. The CI fetches it via `scp` before running `flutter build web --dart-define-from-file=.env`, using the existing `VPS_SSH_KEY` / `VPS_HOST_KEY` / `VPS_USER` / `VPS_HOST` secrets. No new GitHub secrets are needed for Supabase config.
+`SUPABASE_URL` and `SUPABASE_ANON_KEY` already exist as GitHub secrets — the `deploy-testflight.yml` workflow uses them. The `build-and-push` job writes `.env` from those secrets before `flutter build web --dart-define-from-file=.env`, mirroring the TestFlight pattern exactly. Any additional secrets needed in future should be sourced from the VPS.
 
 ---
 
@@ -89,7 +89,7 @@ Triggers on push to `main`. Runs on `ubuntu-latest`.
 **Jobs:**
 
 1. **validate** — `flutter pub get && make ci` (`flutter analyze && flutter test`)
-2. **build-and-push** (needs validate) — single job: SSH into VPS to `scp ~/.env`, then `flutter pub get`, `flutter build web --release --dart-define-from-file=.env`, then inline `docker/build-push-action` using `Dockerfile.web`. Flutter build and Docker build must be in the same job because `docker build` needs the `build/web/` output on the same runner. Image: `ghcr.io/ny-randriantsarafara/pomodoro-web`, tags `latest` + `sha-<short>`.
+2. **build-and-push** (needs validate) — single job: write `.env` from `${{ secrets.SUPABASE_URL }}` and `${{ secrets.SUPABASE_ANON_KEY }}`, then `flutter pub get`, `flutter build web --release --dart-define-from-file=.env`, then inline `docker/build-push-action` using `Dockerfile.web`. Flutter build and Docker build must be in the same job because `docker build` needs the `build/web/` output on the same runner. Image: `ghcr.io/ny-randriantsarafara/pomodoro-web`, tags `latest` + `sha-<short>`.
 3. **deploy** (needs build-and-push) — calls `ny-randriantsarafara/vps-services/.github/workflows/deploy-compose.yml@main` with `compose_file: deploy/docker-compose.web.yml`, `services: pomodoro`
 
 **No new GitHub secrets required.** All secrets already exist:
