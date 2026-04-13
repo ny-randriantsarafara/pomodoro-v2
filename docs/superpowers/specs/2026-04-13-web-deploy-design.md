@@ -84,10 +84,9 @@ Triggers on push to `main`. Runs on `ubuntu-latest`.
 
 **Jobs:**
 
-1. **validate** — `flutter analyze && flutter test` via `make ci`
-2. **build-web** — `flutter build web --release --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...` using GitHub secrets
-3. **build-and-push** — inline `docker/build-push-action` using `Dockerfile.web`, image `ghcr.io/ny-randriantsarafara/pomodoro-web`, tags `latest` + `sha-<short>`
-4. **deploy** — calls `ny-randriantsarafara/vps-services/.github/workflows/deploy-compose.yml@main` with `compose_file: deploy/docker-compose.web.yml`, `services: pomodoro`
+1. **validate** — `flutter pub get && make ci` (`flutter analyze && flutter test`)
+2. **build-and-push** (needs validate) — single job: `flutter pub get`, `flutter build web --release --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...`, then inline `docker/build-push-action` using `Dockerfile.web`. Flutter build and Docker build must be in the same job because `docker build` needs the `build/web/` output on the same runner. Image: `ghcr.io/ny-randriantsarafara/pomodoro-web`, tags `latest` + `sha-<short>`.
+3. **deploy** (needs build-and-push) — calls `ny-randriantsarafara/vps-services/.github/workflows/deploy-compose.yml@main` with `compose_file: deploy/docker-compose.web.yml`, `services: pomodoro`
 
 **Required GitHub secrets (new):**
 - `SUPABASE_URL`
