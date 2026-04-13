@@ -3,6 +3,12 @@ name: CI
 on:
   push:
     branches: ['**']
+    paths-ignore:
+      - 'deploy/**'
+      - 'Dockerfile.web'
+      - 'nginx.conf'
+      - '.github/workflows/deploy-web.yml'
+      - 'docs/**'
 
 jobs:
   ci:
