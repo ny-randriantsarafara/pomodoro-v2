@@ -2,9 +2,36 @@
 <html>
 <head><title>Authentication</title></head>
 <body>
+<p>Completing authentication...</p>
 <script>
-  window.opener.postMessage(window.location.href, window.location.origin);
-  window.close();
+  (function() {
+    var href = window.location.href;
+    var hash = window.location.hash;
+    var search = window.location.search;
+    
+    console.log('[auth.html] href:', href);
+    console.log('[auth.html] hash:', hash);
+    console.log('[auth.html] search:', search);
+    console.log('[auth.html] opener:', !!window.opener);
+    
+    if (window.opener) {
+      // Popup mode: send URL back to opener and close
+      console.log('[auth.html] Popup mode - posting message');
+      window.opener.postMessage(href, window.location.origin);
+      window.close();
+    } else {
+      // Redirect mode: redirect back to app with auth params
+      // Supabase tokens come in the hash fragment (#access_token=...)
+      // PKCE code comes in query params (?code=...)
+      console.log('[auth.html] Redirect mode - going back to app');
+      
+      // Redirect to app root, preserving both hash and query params
+      // The Supabase client will automatically pick up the session
+      var appUrl = window.location.origin + '/' + (hash || search);
+      console.log('[auth.html] Redirecting to:', appUrl);
+      window.location.replace(appUrl);
+    }
+  })();
 </script>
 </body>
 </html>

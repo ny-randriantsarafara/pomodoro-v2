@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_repository.dart';
+import '../shared/logging/app_logger.dart';
+import 'web_helpers.dart';
 
 class SupabaseAuthRepository implements AuthRepository {
   final SupabaseClient _client;
@@ -11,8 +13,20 @@ class SupabaseAuthRepository implements AuthRepository {
   static const _nativeRedirect = 'io.supabase.rhythm://login-callback';
   static const _nativeScheme = 'io.supabase.rhythm';
 
-  String get _webRedirect =>
-      Uri.base.resolve('/auth.html').toString();
+  String get _webRedirect {
+    // Use actual browser origin instead of Uri.base to handle local/production correctly
+    final origin = kIsWeb ? getWebOrigin() : '';
+    final resolved = '$origin/auth.html';
+    AppLogger.debug(
+      domain: 'auth',
+      event: 'web_redirect_computed',
+      context: {
+        'origin': origin,
+        'resolved': resolved,
+      },
+    );
+    return resolved;
+  }
 
   @override
   Future<void> signInWithMagicLink(String email) async {
@@ -33,14 +47,48 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<void> _signInWithOAuthProvider(OAuthProvider provider) async {
     final redirectTo = kIsWeb ? _webRedirect : _nativeRedirect;
 
+    AppLogger.debug(
+      domain: 'auth',
+      event: 'oauth_start',
+      context: {
+        'provider': provider.name,
+        'redirectTo': redirectTo,
+        'isWeb': kIsWeb,
+      },
+    );
+
+    if (kIsWeb) {
+      // On web, use Supabase's built-in OAuth redirect flow
+      // This handles the full redirect cycle automatically
+      await _client.auth.signInWithOAuth(
+        provider,
+        redirectTo: redirectTo,
+      );
+      // The page will redirect, so code after this won't execute
+      return;
+    }
+
+    // On native platforms, use FlutterWebAuth2 for custom URL scheme handling
     final res = await _client.auth.getOAuthSignInUrl(
       provider: provider,
       redirectTo: redirectTo,
     );
 
+    AppLogger.debug(
+      domain: 'auth',
+      event: 'oauth_url_obtained',
+      context: {'url': res.url.toString()},
+    );
+
     final callbackUrl = await FlutterWebAuth2.authenticate(
       url: res.url.toString(),
-      callbackUrlScheme: kIsWeb ? Uri.base.scheme : _nativeScheme,
+      callbackUrlScheme: _nativeScheme,
+    );
+
+    AppLogger.debug(
+      domain: 'auth',
+      event: 'oauth_callback_received',
+      context: {'callbackUrl': callbackUrl},
     );
 
     final uri = Uri.parse(callbackUrl);
@@ -49,17 +97,39 @@ class SupabaseAuthRepository implements AuthRepository {
     if (error != null) {
       final description =
           uri.queryParameters['error_description'] ?? error;
+      AppLogger.error(
+        domain: 'auth',
+        event: 'oauth_error_in_callback',
+        context: {'error': error, 'description': description},
+      );
       throw AuthException(description);
     }
 
     final code = uri.queryParameters['code'];
     if (code == null) {
+      AppLogger.error(
+        domain: 'auth',
+        event: 'oauth_no_code',
+        context: {'uri': uri.toString(), 'queryParams': uri.queryParameters},
+      );
       throw AuthException(
         'OAuth callback did not contain an authorization code.',
       );
     }
 
+    AppLogger.debug(
+      domain: 'auth',
+      event: 'oauth_exchanging_code',
+      context: {'codeLength': code.length},
+    );
+
     await _client.auth.exchangeCodeForSession(code);
+
+    AppLogger.debug(
+      domain: 'auth',
+      event: 'oauth_session_established',
+      context: {'userId': _client.auth.currentUser?.id},
+    );
   }
 
   @override
