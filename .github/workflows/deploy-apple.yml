@@ -134,7 +134,6 @@ jobs:
           git tag -a "$NEW_TAG" HEAD -m "Release $NEW_TAG"
           git push origin "$NEW_TAG"
           gh release create "$NEW_TAG" \
-            --target HEAD \
             --title "$NEW_TAG" \
             --generate-notes
 
