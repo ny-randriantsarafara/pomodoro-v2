@@ -2,9 +2,23 @@
 <html>
 <head><title>Authentication</title></head>
 <body>
+<p>Completing authentication...</p>
 <script>
-  window.opener.postMessage(window.location.href, window.location.origin);
-  window.close();
+  (function() {
+    var hash = window.location.hash;
+    var search = window.location.search;
+    
+    if (window.opener) {
+      // Popup mode: send URL back to opener and close
+      window.opener.postMessage(window.location.href, window.location.origin);
+      window.close();
+    } else {
+      // Redirect mode: redirect back to app with auth params
+      // Include both query and hash to handle all OAuth flows
+      var appUrl = window.location.origin + '/' + search + hash;
+      window.location.replace(appUrl);
+    }
+  })();
 </script>
 </body>
 </html>
