@@ -1,0 +1,22 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+jobs:
+  validate:
+    name: Analyze & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - run: flutter pub get
+
+      - name: Analyze & Test
+        run: make ci
