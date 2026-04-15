@@ -74,7 +74,7 @@ void main() {
 
     await coordinator.onSessionCompleted(SessionType.breakTime);
 
-    expect(sounds.played.single, 'assets/sounds/break-complete.wav');
+    expect(sounds.played.single, 'assets/sounds/break-complete.mp3');
   });
 
   test('onSessionCompleted plays focus sound when sound is enabled', () async {
@@ -83,7 +83,7 @@ void main() {
 
     await coordinator.onSessionCompleted(SessionType.focus);
 
-    expect(sounds.played.single, 'assets/sounds/focus-complete.wav');
+    expect(sounds.played.single, 'assets/sounds/focus-complete.mp3');
   });
 
   test('onSessionCompleted skips sound when sound is disabled', () async {
