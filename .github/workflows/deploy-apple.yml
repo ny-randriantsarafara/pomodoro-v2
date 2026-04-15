@@ -170,9 +170,11 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPPORT_EMAIL: ${{ secrets.SUPPORT_EMAIL }}
         run: |
           echo "SUPABASE_URL=$SUPABASE_URL" >> .env
           echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
+          echo "SUPPORT_EMAIL=$SUPPORT_EMAIL" >> .env
 
       - name: Setup SSH key for Match
         uses: webfactory/ssh-agent@v0.9.0
@@ -228,9 +230,11 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPPORT_EMAIL: ${{ secrets.SUPPORT_EMAIL }}
         run: |
           echo "SUPABASE_URL=$SUPABASE_URL" >> .env
           echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
+          echo "SUPPORT_EMAIL=$SUPPORT_EMAIL" >> .env
 
       - name: Setup SSH key for Match
         uses: webfactory/ssh-agent@v0.9.0

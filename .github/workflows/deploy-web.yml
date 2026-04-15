@@ -41,10 +41,12 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPPORT_EMAIL: ${{ secrets.SUPPORT_EMAIL }}
         run: |
           printf '%s\n' \
             "SUPABASE_URL=$SUPABASE_URL" \
             "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" \
+            "SUPPORT_EMAIL=$SUPPORT_EMAIL" \
             > .env
 
       - name: Build Flutter web

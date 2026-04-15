@@ -41,6 +41,8 @@ class AppColors {
   static const destructiveBg = Color(0xFFFEF2F2);
   static const destructiveBorder = Color(0xFFFECACA);
 
+  static const blue50 = Color(0xFFEFF6FF);
+  static const blue600 = Color(0xFF2563EB);
   static const blueBg = Color(0xFFDBEAFE);
   static const blueFg = Color(0xFF1D4ED8);
   static const emeraldBg = Color(0xFFD1FAE5);
@@ -49,6 +51,8 @@ class AppColors {
   static const purpleFg = Color(0xFF7E22CE);
   static const amberBg = Color(0xFFFEF3C7);
   static const amberFg = Color(0xFFB45309);
+  static const rose50 = Color(0xFFFFF1F2);
+  static const rose600 = Color(0xFFE11D48);
   static const roseBg = Color(0xFFFFE4E6);
   static const roseFg = Color(0xFFBE123C);
   static const indigoBg = Color(0xFFE0E7FF);
