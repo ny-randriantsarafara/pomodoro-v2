@@ -6,3 +6,6 @@ export 'domain/alert_rules.dart';
 export 'data/alert_settings_repository.dart';
 export 'data/shared_preferences_alert_settings_repository.dart';
 export 'application/alert_settings_controller.dart';
+export 'application/session_alert_coordinator.dart';
+export 'platform/notification_adapter.dart';
+export 'platform/sound_adapter.dart';

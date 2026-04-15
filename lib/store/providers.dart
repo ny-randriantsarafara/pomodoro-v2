@@ -1,7 +1,13 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../alerts/alerts.dart';
+import '../alerts/platform/audioplayers_sound_adapter.dart';
+import '../alerts/platform/browser_notification_adapter.dart'
+    as browser_adapter;
+import '../alerts/platform/flutter_local_notifications_adapter.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../repositories/repositories.dart';
 import 'app_store.dart';
 
@@ -71,4 +77,30 @@ final alertSettingsControllerProvider =
       AlertSettingsController(ref.watch(alertSettingsRepositoryProvider));
   controller.load();
   return controller;
+});
+
+final notificationAdapterProvider = Provider<NotificationAdapter>((ref) {
+  if (kIsWeb) {
+    return browser_adapter.createBrowserNotificationAdapter();
+  }
+  return FlutterLocalNotificationsAdapter(
+    FlutterLocalNotificationsPlugin(),
+  );
+});
+
+final soundAdapterProvider = Provider<SoundAdapter>((ref) {
+  return AudioplayersSoundAdapter();
+});
+
+final sessionAlertCoordinatorProvider =
+    Provider<SessionAlertCoordinator>((ref) {
+  return SessionAlertCoordinator(
+    settingsRepository: ref.watch(alertSettingsRepositoryProvider),
+    notificationAdapter: ref.watch(notificationAdapterProvider),
+    soundAdapter: ref.watch(soundAdapterProvider),
+    capabilities: const AlertCapabilities(
+      canNotify: true,
+      canPlaySound: true,
+    ),
+  );
 });
