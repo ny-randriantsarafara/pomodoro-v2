@@ -33,6 +33,8 @@ Fonts are declared in `pubspec.yaml`; ensure the files listed there exist under 
 | `/` | Home (today, tasks, composer) |
 | `/history` | Rhythm / history stats and session log |
 | `/auth` | Sign in / sign up (mock auth) |
+| `/settings` | Alert preferences (notifications, sound), privacy link, account actions |
+| `/privacy` | Public privacy policy (no auth required) |
 | `/focus/:taskId` | Immersive focus timer; optional query `preset` (minutes, default `25`) |
 | `/break/:taskId` | Break flow; queries `mins` (default `5`), `completed` (`true` / absent) |
 
@@ -50,7 +52,8 @@ High level (feature-based):
 - `lib/models/` — `Project`, `Task`, `Session`
 - `lib/store/` — global state + Riverpod providers
 - `lib/router/` — `go_router` configuration
-- `lib/features/` — `layout`, `home`, `focus`, `break_timer`, `history`, `auth`
+- `lib/alerts/` — alert domain, settings persistence, coordinator, platform adapters
+- `lib/features/` — `layout`, `home`, `focus`, `break_timer`, `history`, `auth`, `settings`, `privacy`
 - `lib/shared/` — reusable widgets and utilities
 
 A fuller folder map and product principles live in the design doc below.
