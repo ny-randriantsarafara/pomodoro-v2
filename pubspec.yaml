@@ -17,6 +17,9 @@ dependencies:
   supabase_flutter: ^2.0.0
   shared_preferences: ^2.3.0
   web: ^1.0.0
+  flutter_local_notifications: ^18.0.0
+  audioplayers: ^6.0.0
+  timezone: ^0.10.0
 
 dev_dependencies:
   flutter_test:
@@ -29,6 +32,7 @@ flutter:
   assets:
     - assets/fonts/
     - assets/images/
+    - assets/sounds/
 
   fonts:
     - family: Inter

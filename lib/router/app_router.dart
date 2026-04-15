@@ -7,6 +7,8 @@ import '../features/history/history_page.dart';
 import '../features/auth/auth_page.dart';
 import '../features/focus/focus_timer_page.dart';
 import '../features/break_timer/break_timer_page.dart';
+import '../features/settings/settings_page.dart';
+import '../features/privacy/privacy_policy_page.dart';
 import '../store/providers.dart';
 import '../shared/logging/app_logger.dart';
 
@@ -50,6 +52,26 @@ GoRouter createRouter(Ref ref) {
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/privacy',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const PrivacyPolicyPage(),
+          transitionsBuilder: (context, animation, _, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      ),
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const SettingsPage(),
+          transitionsBuilder: (context, animation, _, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
       ),
       GoRoute(
         path: '/auth',

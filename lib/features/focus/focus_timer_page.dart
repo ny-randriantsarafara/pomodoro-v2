@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../alerts/application/session_alert_coordinator.dart';
 import '../../shared/utils/format_helpers.dart';
 import '../../store/providers.dart';
 import '../../theme/app_colors.dart';
@@ -77,9 +78,17 @@ class _FocusTimerPageState extends ConsumerState<FocusTimerPage>
           phase = FocusPhase.active;
           isActive = true;
         });
+        _scheduleAlert();
         _startTicker();
       }
     });
+  }
+
+  void _scheduleAlert() {
+    final endsAt = DateTime.now().add(Duration(seconds: timeLeft));
+    ref
+        .read(sessionAlertCoordinatorProvider)
+        .onSessionStarted(SessionType.focus, endsAt);
   }
 
   void _startTicker() {
@@ -101,6 +110,9 @@ class _FocusTimerPageState extends ConsumerState<FocusTimerPage>
     if (_completed) return;
     _completed = true;
 
+    final coordinator = ref.read(sessionAlertCoordinatorProvider);
+    await coordinator.onSessionCompleted(SessionType.focus);
+
     final store = ref.read(appStoreProvider);
     final task = store.findTask(widget.taskId);
     final project = task != null ? store.findProject(task.projectId) : null;
@@ -121,23 +133,31 @@ class _FocusTimerPageState extends ConsumerState<FocusTimerPage>
   }
 
   void _handlePauseResume() {
+    final coordinator = ref.read(sessionAlertCoordinatorProvider);
     setState(() {
       isActive = !isActive;
     });
     if (isActive) {
+      _scheduleAlert();
       _startTicker();
     } else {
+      coordinator.onSessionCancelledOrReset();
       ticker?.cancel();
     }
   }
 
   void _handleAbandon() {
+    ref.read(sessionAlertCoordinatorProvider).onSessionCancelledOrReset();
     if (mounted) context.go('/');
   }
 
   Future<void> _handleSaveEnd() async {
     if (_completed) return;
     _completed = true;
+
+    await ref
+        .read(sessionAlertCoordinatorProvider)
+        .onSessionCancelledOrReset();
 
     final store = ref.read(appStoreProvider);
     final task = store.findTask(widget.taskId);
@@ -172,6 +192,11 @@ class _FocusTimerPageState extends ConsumerState<FocusTimerPage>
   void dispose() {
     introTimer?.cancel();
     ticker?.cancel();
+    // Cancel any scheduled alerts if session was still active (user exited via
+    // back gesture, router navigation, etc. rather than explicit button)
+    if (isActive && !_completed) {
+      ref.read(sessionAlertCoordinatorProvider).onSessionCancelledOrReset();
+    }
     titleController.dispose();
     timerController.dispose();
     controlsController.dispose();

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:rhythm/app.dart';
 import 'package:rhythm/store/providers.dart';
 import '../../helpers/test_repositories.dart';
@@ -30,7 +31,7 @@ void main() {
 
     expect(find.text('Rhythm'), findsWidgets);
     expect(find.text('Focus'), findsOneWidget);
-    expect(find.text('Account'), findsOneWidget);
+    expect(find.byIcon(LucideIcons.settings), findsOneWidget);
   });
 
   testWidgets('mobile shell renders header and bottom nav', (tester) async {
@@ -48,7 +49,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Rhythm'), findsWidgets);
-    expect(find.text('Account'), findsOneWidget);
+    expect(find.byIcon(LucideIcons.settings), findsOneWidget);
     expect(find.text('Focus'), findsOneWidget);
   });
 

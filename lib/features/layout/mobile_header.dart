@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import 'package:go_router/go_router.dart';
 import '../../shared/widgets/app_icon.dart';
-import '../../repositories/auth_repository.dart';
 import '../../store/providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class MobileHeader extends ConsumerWidget {
   const MobileHeader({super.key});
@@ -16,7 +16,6 @@ class MobileHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final topInset = MediaQuery.of(context).padding.top;
-    final authRepo = ref.watch(authRepositoryProvider);
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
 
     return Container(
@@ -58,65 +57,21 @@ class MobileHeader extends ConsumerWidget {
                     ),
                   ],
                 ),
-                if (isAuthenticated)
-                  PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'sign_out') {
-                        authRepo.signOut();
-                      } else if (value == 'delete') {
-                        _showDeleteConfirmation(context, authRepo);
-                      }
-                    },
-                    itemBuilder: (_) => [
-                      const PopupMenuItem(
-                        value: 'sign_out',
-                        child: Text('Sign Out'),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Text(
-                          'Delete Account',
-                          style: TextStyle(color: const Color(0xFFDC2626)),
-                        ),
-                      ),
-                    ],
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.neutral100,
-                        borderRadius: AppRadii.borderSm,
-                      ),
-                      child: Text(
-                        'Account',
-                        style: AppTypography.bodyXs.copyWith(
-                          color: AppColors.neutral600,
-                        ),
-                      ),
+                GestureDetector(
+                  onTap: () => context.go(isAuthenticated ? '/settings' : '/auth'),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.neutral100,
+                      borderRadius: AppRadii.borderSm,
                     ),
-                  )
-                else
-                  GestureDetector(
-                    onTap: () => context.go('/auth'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.neutral100,
-                        borderRadius: AppRadii.borderSm,
-                      ),
-                      child: Text(
-                        'Sign In',
-                        style: AppTypography.bodyXs.copyWith(
-                          color: AppColors.neutral600,
-                        ),
-                      ),
+                    child: Icon(
+                      isAuthenticated ? LucideIcons.settings : LucideIcons.user,
+                      size: 18,
+                      color: AppColors.neutral600,
                     ),
                   ),
+                ),
               ],
             ),
           ),
@@ -124,31 +79,4 @@ class MobileHeader extends ConsumerWidget {
       ),
     );
   }
-}
-
-void _showDeleteConfirmation(BuildContext context, AuthRepository authRepo) {
-  showDialog<void>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Delete Account'),
-      content: const Text(
-        'This will permanently delete your account and all data. '
-        'This cannot be undone.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.of(ctx).pop();
-            authRepo.deleteAccount();
-          },
-          style: TextButton.styleFrom(foregroundColor: const Color(0xFFDC2626)),
-          child: const Text('Delete'),
-        ),
-      ],
-    ),
-  );
 }
