@@ -17,7 +17,7 @@ void main() {
 
     expect(plan.showNotification, isTrue);
     expect(plan.playSound, isTrue);
-    expect(plan.soundAsset, 'assets/sounds/focus-complete.wav');
+    expect(plan.soundAsset, 'assets/sounds/focus-complete.mp3');
     expect(plan.notificationChannelId, 'focus_complete');
   });
 
@@ -36,7 +36,7 @@ void main() {
 
     expect(plan.showNotification, isFalse);
     expect(plan.playSound, isTrue);
-    expect(plan.soundAsset, 'assets/sounds/break-complete.wav');
+    expect(plan.soundAsset, 'assets/sounds/break-complete.mp3');
   });
 
   test('focus completion skips sound when sound is disabled', () {
