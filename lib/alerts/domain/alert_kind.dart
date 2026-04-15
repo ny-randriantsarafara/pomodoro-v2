@@ -1,0 +1,1 @@
+enum AlertKind { focusCompleted, breakCompleted }
