@@ -190,49 +190,53 @@ class _ToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(isDesktop ? AppSpacing.xl : AppSpacing.lg),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: iconBgColor,
-              borderRadius: BorderRadius.circular(AppRadii.full),
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: EdgeInsets.all(isDesktop ? AppSpacing.xl : AppSpacing.lg),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: iconBgColor,
+                borderRadius: BorderRadius.circular(AppRadii.full),
+              ),
+              child: Icon(icon, color: iconFgColor, size: 16),
             ),
-            child: Icon(icon, color: iconFgColor, size: 16),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.bodyBase.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.bodyBase.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: AppTypography.bodySm.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w400,
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTypography.bodySm.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Switch.adaptive(
-            value: value,
-            onChanged: onChanged,
-            activeTrackColor: AppColors.neutral900,
-          ),
-        ],
+            const SizedBox(width: AppSpacing.md),
+            Switch.adaptive(
+              value: value,
+              onChanged: onChanged,
+              activeTrackColor: AppColors.neutral900,
+            ),
+          ],
+        ),
       ),
     );
   }

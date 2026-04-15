@@ -12,10 +12,9 @@ class SupportPage extends StatelessWidget {
   const SupportPage({super.key});
 
   static const _breakpoint = 768.0;
-  static const _supportEmail = String.fromEnvironment(
-    'SUPPORT_EMAIL',
-    defaultValue: 'support@rhythm-app.com',
-  );
+  static const _envEmail = String.fromEnvironment('SUPPORT_EMAIL');
+  static const _supportEmail =
+      _envEmail == '' ? 'support@rhythm-app.com' : _envEmail;
 
   @override
   Widget build(BuildContext context) {
