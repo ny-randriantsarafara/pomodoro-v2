@@ -7,14 +7,36 @@ class FlutterLocalNotificationsAdapter implements NotificationAdapter {
   static const _sessionNotificationId = 1;
 
   final FlutterLocalNotificationsPlugin _plugin;
+  bool _initialized = false;
 
   FlutterLocalNotificationsAdapter(this._plugin);
+
+  Future<void> _ensureInitialized() async {
+    if (_initialized) return;
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestSoundPermission: true,
+    );
+    const macosSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestSoundPermission: true,
+    );
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+      macOS: macosSettings,
+    );
+    await _plugin.initialize(initSettings);
+    _initialized = true;
+  }
 
   @override
   Future<void> schedule({
     required AlertKind kind,
     required DateTime scheduledFor,
   }) async {
+    await _ensureInitialized();
     final isFocus = kind == AlertKind.focusCompleted;
     final title = isFocus ? 'Focus Complete' : 'Break Complete';
     final body = isFocus

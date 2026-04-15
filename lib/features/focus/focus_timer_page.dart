@@ -192,6 +192,11 @@ class _FocusTimerPageState extends ConsumerState<FocusTimerPage>
   void dispose() {
     introTimer?.cancel();
     ticker?.cancel();
+    // Cancel any scheduled alerts if session was still active (user exited via
+    // back gesture, router navigation, etc. rather than explicit button)
+    if (isActive && !_completed) {
+      ref.read(sessionAlertCoordinatorProvider).onSessionCancelledOrReset();
+    }
     titleController.dispose();
     timerController.dispose();
     controlsController.dispose();

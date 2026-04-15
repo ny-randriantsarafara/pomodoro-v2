@@ -8,6 +8,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class MobileHeader extends ConsumerWidget {
   const MobileHeader({super.key});
@@ -56,46 +57,21 @@ class MobileHeader extends ConsumerWidget {
                     ),
                   ],
                 ),
-                if (isAuthenticated)
-                  GestureDetector(
-                    onTap: () => context.go('/settings'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.neutral100,
-                        borderRadius: AppRadii.borderSm,
-                      ),
-                      child: Text(
-                        'Account',
-                        style: AppTypography.bodyXs.copyWith(
-                          color: AppColors.neutral600,
-                        ),
-                      ),
+                GestureDetector(
+                  onTap: () => context.go(isAuthenticated ? '/settings' : '/auth'),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.neutral100,
+                      borderRadius: AppRadii.borderSm,
                     ),
-                  )
-                else
-                  GestureDetector(
-                    onTap: () => context.go('/auth'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.neutral100,
-                        borderRadius: AppRadii.borderSm,
-                      ),
-                      child: Text(
-                        'Sign In',
-                        style: AppTypography.bodyXs.copyWith(
-                          color: AppColors.neutral600,
-                        ),
-                      ),
+                    child: Icon(
+                      isAuthenticated ? LucideIcons.settings : LucideIcons.user,
+                      size: 18,
+                      color: AppColors.neutral600,
                     ),
                   ),
+                ),
               ],
             ),
           ),

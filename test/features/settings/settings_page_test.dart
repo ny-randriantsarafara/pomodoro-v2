@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:rhythm/alerts/alerts.dart';
 import 'package:rhythm/app.dart';
 import 'package:rhythm/store/providers.dart';
@@ -43,7 +44,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Account'));
+    await tester.tap(find.byIcon(LucideIcons.settings));
     await tester.pumpAndSettle();
 
     expect(find.text('Notifications'), findsOneWidget);
@@ -77,7 +78,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Account'));
+    await tester.tap(find.byIcon(LucideIcons.settings));
     await tester.pumpAndSettle();
 
     final notificationsSwitch = find.byType(Switch).first;

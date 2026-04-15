@@ -84,54 +84,24 @@ class DesktopHeader extends ConsumerWidget {
                       ),
                     ),
                     const Spacer(),
-                    if (isAuthenticated)
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () => context.go('/settings'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                              vertical: AppSpacing.sm,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.neutral100,
-                              borderRadius: AppRadii.borderLg,
-                            ),
-                            child: Text(
-                              'Account',
-                              style: AppTypography.bodySm.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.neutral600,
-                              ),
-                            ),
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () => context.go(isAuthenticated ? '/settings' : '/auth'),
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.sm),
+                          decoration: BoxDecoration(
+                            color: AppColors.neutral100,
+                            borderRadius: AppRadii.borderLg,
                           ),
-                        ),
-                      )
-                    else
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () => context.go('/auth'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                              vertical: AppSpacing.sm,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.neutral100,
-                              borderRadius: AppRadii.borderLg,
-                            ),
-                            child: Text(
-                              'Sign In',
-                              style: AppTypography.bodySm.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.neutral600,
-                              ),
-                            ),
+                          child: Icon(
+                            isAuthenticated ? LucideIcons.settings : LucideIcons.user,
+                            size: 20,
+                            color: AppColors.neutral600,
                           ),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
