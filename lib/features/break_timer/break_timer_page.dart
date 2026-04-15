@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -43,7 +44,7 @@ class _BreakTimerPageState extends ConsumerState<BreakTimerPage>
   @override
   void initState() {
     super.initState();
-    initialTime = widget.breakMinutes * 60;
+    initialTime = kDebugMode ? 3 : widget.breakMinutes * 60;
     timeLeft = initialTime;
     phase = widget.justCompleted ? BreakPhase.celebration : BreakPhase.recovery;
 

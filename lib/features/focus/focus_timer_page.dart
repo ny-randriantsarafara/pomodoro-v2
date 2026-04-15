@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -46,7 +47,7 @@ class _FocusTimerPageState extends ConsumerState<FocusTimerPage>
   @override
   void initState() {
     super.initState();
-    initialTime = widget.preset * 60;
+    initialTime = kDebugMode ? 5 : widget.preset * 60;
     timeLeft = initialTime;
 
     titleController = AnimationController(
