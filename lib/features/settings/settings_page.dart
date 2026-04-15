@@ -100,6 +100,14 @@ class SettingsPage extends ConsumerWidget {
                         onTap: () => context.push('/privacy'),
                         isDesktop: isDesktop,
                       ),
+                      _NavigationRow(
+                        icon: Icons.headset_mic_outlined,
+                        iconBgColor: AppColors.rose50,
+                        iconFgColor: AppColors.rose600,
+                        title: 'Support',
+                        onTap: () => context.push('/support'),
+                        isDesktop: isDesktop,
+                      ),
                     ],
                   ),
                   if (isAuthenticated) ...[
