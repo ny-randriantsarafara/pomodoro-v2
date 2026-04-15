@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../alerts/alerts.dart';
 import '../repositories/repositories.dart';
 import 'app_store.dart';
 
@@ -55,4 +56,19 @@ final appStoreProvider = ChangeNotifierProvider<AppStore>((ref) {
     projectRepo: ref.watch(projectRepositoryProvider),
     sessionRepo: ref.watch(sessionRepositoryProvider),
   );
+});
+
+final alertSettingsRepositoryProvider =
+    Provider<AlertSettingsRepository>((ref) {
+  return SharedPreferencesAlertSettingsRepository(
+    ref.watch(sharedPreferencesProvider),
+  );
+});
+
+final alertSettingsControllerProvider =
+    ChangeNotifierProvider<AlertSettingsController>((ref) {
+  final controller =
+      AlertSettingsController(ref.watch(alertSettingsRepositoryProvider));
+  controller.load();
+  return controller;
 });
