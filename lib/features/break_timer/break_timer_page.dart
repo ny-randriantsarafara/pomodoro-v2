@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../alerts/application/session_alert_coordinator.dart';
 import '../../store/providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_motion.dart';
@@ -56,12 +57,21 @@ class _BreakTimerPageState extends ConsumerState<BreakTimerPage>
       celebrationTimer = Timer(AppMotion.celebrationDelay, () {
         if (mounted) {
           setState(() => phase = BreakPhase.recovery);
+          _scheduleBreakAlert();
           _startTicker();
         }
       });
     } else {
+      _scheduleBreakAlert();
       _startTicker();
     }
+  }
+
+  void _scheduleBreakAlert() {
+    final endsAt = DateTime.now().add(Duration(seconds: timeLeft));
+    ref
+        .read(sessionAlertCoordinatorProvider)
+        .onSessionStarted(SessionType.breakTime, endsAt);
   }
 
   void _startTicker() {
@@ -79,12 +89,18 @@ class _BreakTimerPageState extends ConsumerState<BreakTimerPage>
   void _goHome() {
     if (_navigated) return;
     _navigated = true;
+    ref
+        .read(sessionAlertCoordinatorProvider)
+        .onSessionCompleted(SessionType.breakTime);
     if (mounted) context.go('/');
   }
 
   void _handleContinue() {
     if (_navigated) return;
     _navigated = true;
+    ref
+        .read(sessionAlertCoordinatorProvider)
+        .onSessionCancelledOrReset();
     final store = ref.read(appStoreProvider);
     final preset = store.lastUsedPreset;
     if (mounted) {
