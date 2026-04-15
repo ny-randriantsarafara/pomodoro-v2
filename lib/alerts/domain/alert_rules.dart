@@ -13,8 +13,8 @@ AlertPlan buildCompletionAlertPlan({
     showNotification: settings.notificationsEnabled && capabilities.canNotify,
     playSound: settings.soundEnabled && capabilities.canPlaySound,
     soundAsset: isFocus
-        ? 'assets/sounds/focus-complete.wav'
-        : 'assets/sounds/break-complete.wav',
+        ? 'assets/sounds/focus-complete.mp3'
+        : 'assets/sounds/break-complete.mp3',
     notificationChannelId: isFocus ? 'focus_complete' : 'break_complete',
   );
 }
