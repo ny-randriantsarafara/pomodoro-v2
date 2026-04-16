@@ -15,30 +15,11 @@ void main() async {
     anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
   );
 
-  if (kDebugMode) {
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      final event = data.event;
-      final session = data.session;
-      AppLogger.debug(
-        domain: 'auth',
-        event: 'auth_state_changed',
-        context: {
-          'authEvent': event.name,
-          'hasSession': session != null,
-          'sessionUserId': session?.user.id,
-          'currentUserId': Supabase.instance.client.auth.currentUser?.id,
-        },
-      );
-    });
-  }
-
   final prefs = await SharedPreferences.getInstance();
 
   runApp(
     ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-      ],
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       child: const RhythmApp(),
     ),
   );

@@ -20,22 +20,7 @@ class RhythmApp extends ConsumerWidget {
       final wasSignedIn = prev?.valueOrNull?.session != null;
       final isSignedIn = next.valueOrNull?.session != null;
 
-      AppLogger.debug(
-        domain: 'app',
-        event: 'auth_state_listener',
-        context: {
-          'wasSignedIn': wasSignedIn,
-          'isSignedIn': isSignedIn,
-          'authEvent': next.valueOrNull?.event.name,
-        },
-      );
-
       if (!wasSignedIn && isSignedIn) {
-        AppLogger.debug(
-          domain: 'app',
-          event: 'user_just_signed_in',
-          context: {},
-        );
 
         await LocalToSupabaseMigration(
           prefs: ref.read(sharedPreferencesProvider),
@@ -46,11 +31,6 @@ class RhythmApp extends ConsumerWidget {
         final router = ref.read(routerProvider);
         final currentLocation = router.routerDelegate.currentConfiguration.fullPath;
         if (currentLocation == '/auth') {
-          AppLogger.debug(
-            domain: 'app',
-            event: 'navigating_to_home_after_auth',
-            context: {'from': currentLocation},
-          );
           router.go('/');
         }
       }
