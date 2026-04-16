@@ -11,7 +11,6 @@ import '../features/settings/settings_page.dart';
 import '../features/privacy/privacy_policy_page.dart';
 import '../features/support/support_page.dart';
 import '../store/providers.dart';
-import '../shared/logging/app_logger.dart';
 
 GoRouter createRouter(Ref ref) {
   final authRepo = ref.read(authRepositoryProvider);

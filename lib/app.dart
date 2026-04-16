@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'router/app_router.dart';
 import 'services/local_to_supabase_migration.dart';
-import 'shared/logging/app_logger.dart';
 import 'store/providers.dart';
 import 'theme/app_theme.dart';
 
