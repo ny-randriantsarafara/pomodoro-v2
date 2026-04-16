@@ -17,14 +17,6 @@ class SupabaseAuthRepository implements AuthRepository {
     // Use actual browser origin instead of Uri.base to handle local/production correctly
     final origin = kIsWeb ? getWebOrigin() : '';
     final resolved = '$origin/auth.html';
-    AppLogger.debug(
-      domain: 'auth',
-      event: 'web_redirect_computed',
-      context: {
-        'origin': origin,
-        'resolved': resolved,
-      },
-    );
     return resolved;
   }
 
@@ -47,16 +39,6 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<void> _signInWithOAuthProvider(OAuthProvider provider) async {
     final redirectTo = kIsWeb ? _webRedirect : _nativeRedirect;
 
-    AppLogger.debug(
-      domain: 'auth',
-      event: 'oauth_start',
-      context: {
-        'provider': provider.name,
-        'redirectTo': redirectTo,
-        'isWeb': kIsWeb,
-      },
-    );
-
     if (kIsWeb) {
       // On web, use Supabase's built-in OAuth redirect flow
       // This handles the full redirect cycle automatically
@@ -74,21 +56,9 @@ class SupabaseAuthRepository implements AuthRepository {
       redirectTo: redirectTo,
     );
 
-    AppLogger.debug(
-      domain: 'auth',
-      event: 'oauth_url_obtained',
-      context: {'url': res.url.toString()},
-    );
-
     final callbackUrl = await FlutterWebAuth2.authenticate(
       url: res.url.toString(),
       callbackUrlScheme: _nativeScheme,
-    );
-
-    AppLogger.debug(
-      domain: 'auth',
-      event: 'oauth_callback_received',
-      context: {'callbackUrl': callbackUrl},
     );
 
     final uri = Uri.parse(callbackUrl);
@@ -117,19 +87,8 @@ class SupabaseAuthRepository implements AuthRepository {
       );
     }
 
-    AppLogger.debug(
-      domain: 'auth',
-      event: 'oauth_exchanging_code',
-      context: {'codeLength': code.length},
-    );
-
     await _client.auth.exchangeCodeForSession(code);
 
-    AppLogger.debug(
-      domain: 'auth',
-      event: 'oauth_session_established',
-      context: {'userId': _client.auth.currentUser?.id},
-    );
   }
 
   @override

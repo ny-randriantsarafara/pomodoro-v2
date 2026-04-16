@@ -11,7 +11,6 @@ import '../features/settings/settings_page.dart';
 import '../features/privacy/privacy_policy_page.dart';
 import '../features/support/support_page.dart';
 import '../store/providers.dart';
-import '../shared/logging/app_logger.dart';
 
 GoRouter createRouter(Ref ref) {
   final authRepo = ref.read(authRepositoryProvider);
@@ -20,17 +19,6 @@ GoRouter createRouter(Ref ref) {
     redirect: (context, state) {
       final isAuthenticated = authRepo.currentUser != null;
       final isOnAuth = state.matchedLocation == '/auth';
-
-      AppLogger.debug(
-        domain: 'router',
-        event: 'redirect_check',
-        context: {
-          'isAuthenticated': isAuthenticated,
-          'isOnAuth': isOnAuth,
-          'matchedLocation': state.matchedLocation,
-          'currentUserId': authRepo.currentUser?.id,
-        },
-      );
 
       if (isAuthenticated && isOnAuth) return '/';
       return null;
@@ -141,14 +129,6 @@ GoRouter createRouter(Ref ref) {
 class _AuthNotifier extends ChangeNotifier {
   _AuthNotifier(this._ref) {
     _ref.listen(authStateProvider, (prev, next) {
-      AppLogger.debug(
-        domain: 'router',
-        event: 'auth_state_changed_in_notifier',
-        context: {
-          'prevHasSession': prev?.valueOrNull?.session != null,
-          'nextHasSession': next.valueOrNull?.session != null,
-        },
-      );
       notifyListeners();
     });
   }
